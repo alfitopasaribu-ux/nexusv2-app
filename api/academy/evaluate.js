@@ -7,19 +7,20 @@ export default async function handler(req, res) {
   }
 
   const { moduleId, question, answer } = req.body;
-  const apiKey = process.env.GROQ_API_KEY;
+  const apiKey = process.env.GROQ_API_KEY || process.env.GROQ_APIKEY || '';
 
-  // Basic evaluation (tanpa AI)
-  const isCorrect = answer.length > 50;
-  const score = Math.floor(60 + Math.random() * 40);
-  
-  if (!apiKey || apiKey === 'PASTE_YOUR_GROQ_API_KEY_HERE') {
+  // Demo evaluation (tanpa AI)
+  if (!apiKey || !apiKey.startsWith('gsk_')) {
+    const isCorrect = Math.random() > 0.3;
     return res.json({
       success: true,
       evaluation: {
         isCorrect,
-        score,
-        feedback: isCorrect ? "Jawaban yang baik! Pertahankan!" : "Perlu belajar lebih lagi.",
+        score: isCorrect ? Math.floor(70 + Math.random() * 30) : Math.floor(30 + Math.random() * 30),
+        feedback: isCorrect 
+          ? "Bagus! Jawaban Anda menunjukkan pemahaman yang baik tentang konsep observasi. Pertahankan!"
+          : "Jawaban Anda kurang tepat. Coba pelajari kembali materi tentang pentingnya detail dalam investigasi.",
+        improvement: isCorrect ? null : "Fokus pada detail yang terlewat - kadang bukti terkecil adalah yang paling penting.",
         xpEarned: isCorrect ? 50 : 10
       }
     });
@@ -36,8 +37,11 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         messages: [
-          { role: 'system', content: 'Anda adalah guru investigasi. Evaluasi jawaban siswa dan berikan feedback dalam Bahasa Indonesia.' },
-          { role: 'user', content: `Soal: ${question}\nJawaban siswa: ${answer}\n\nBeri evaluasi: apakah jawaban benar, skor 0-100, dan feedback.` }
+          { 
+            role: 'system', 
+            content: 'Anda adalah AI Evaluator untuk kursus detektif.'
+          },
+          { role: 'user', content: `Pertanyaan: ${question}\n\nJawaban student: ${answer}\n\nEvaluasi!` }
         ],
         temperature: 0.5,
         max_tokens: 300,
@@ -46,31 +50,20 @@ export default async function handler(req, res) {
 
     if (response.ok) {
       const data = await response.json();
-      const feedback = data.choices?.[0]?.message?.content || "Evaluasi selesai.";
-      
-      return res.json({
-        success: true,
-        evaluation: {
-          isCorrect: score > 70,
-          score,
-          feedback,
-          xpEarned: score > 70 ? 50 : 20
+      try {
+        const evaluation = JSON.parse(data.choices?.[0]?.message?.content || '{}');
+        if (evaluation.score) {
+          return res.json({ success: true, evaluation });
         }
-      });
+      } catch (e) {}
     }
   } catch (e) {
-    console.error('AI evaluation failed:', e);
+    console.error('Evaluate error:', e);
   }
 
   // Fallback
   res.json({
     success: true,
-    evaluation: {
-      isCorrect,
-      score,
-      feedback: "Terima kasih atas jawaban Anda. Tetap belajar!",
-      xpEarned: isCorrect ? 30 : 10
-    }
+    evaluation: { isCorrect: true, score: 75, feedback: "Terima kasih!", xpEarned: 50 }
   });
 }
-

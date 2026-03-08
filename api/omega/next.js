@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   }
 
   const { playerId } = req.body;
-  const apiKey = process.env.GROQ_API_KEY;
+  const apiKey = process.env.GROQ_API_KEY || process.env.GROQ_APIKEY || '';
 
   // Check if player has unlocked omega mode
   // In production, check actual player stats from database

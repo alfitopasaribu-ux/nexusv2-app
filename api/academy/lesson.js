@@ -7,91 +7,43 @@ export default async function handler(req, res) {
   }
 
   const { moduleId, lessonNumber = 1, playerId } = req.body;
-  const apiKey = process.env.GROQ_API_KEY;
-  
-  const lessonContent = {
-    1: {
-      title: "Dasar-Dasar Investigasi",
-      objective: "Memahami metodologi investigasi kriminal",
-      theory: `Investigasi adalah proses sistematis untuk mengungkap fakta suatu kasus.
-      
-Tahapan Investigasi:
-1. Pengumpulan Informasi - Kumpulkan semua bukti dan saksi
-2. Analisis - Periksa setiap bukti untuk mencari hubungan
-3. Hipotesis - Buat teori tentang apa yang terjadi
-4. Verifikasi - Uji teori dengan bukti tambahan
-5. Kesimpulan - Buat keputusan berdasarkan bukti
+  const apiKey = process.env.GROQ_API_KEY || process.env.GROQ_APIKEY || '';
 
-Prinsip Penting:
-- Jangan pernah mengasumsikan sesuatu tanpa bukti
-- Setiap bukti harus diverifikasi
-- Perhatikan detail sekecil apa pun
-- Catat semuanya untuk dokumentasi`,
-      keyPoints: [
-        "Kumpulkan bukti secara sistematis",
-        "Verifikasi setiap kesaksian",
-        "Buat hipotesis berdasarkan fakta",
-        "Jangan terburu-buru menyimpulkan"
-      ]
-    },
-    2: {
-      title: "Analisis Bukti Forensik",
-      objective: "Teknik menganalisis dan menginterpretasi bukti",
-      theory: `Bukti forensik adalah inti dari setiap investigasi.
-      
-Jenis Bukti:
-1. Bukti Fisik - Jejak, fingerprints, DNA
-2. Bukti Digital - Email, log, metadata
-3. Bukti Dokumenter - Surat, catatan
-4. Bukti Testimoni - Kesaksian saksi
+  // Demo lesson
+  const demoLesson = {
+    lessonTitle: 'Dasar-dasar Observasi',
+    objective: 'Memahami pentingnya detail dalam investigasi',
+    theory: `Observasi adalah keterampilan fundamental bagi setiap detektif. 
+Detail kecil yang terlewat oleh orang biasa sering kali menjadi kunci pemecahan kasus.
 
-Teknik Analisis:
-- Periksa konteks penemuan bukti
-- Cari hubungan antar bukti
-- Identifikasi bukti palsu/manipulasi
-- Prioritaskan bukti kunci (key evidence)`,
-      keyPoints: [
-        "Semua bukti harus dianalisis",
-        "Bukti palsu sering ada di crime scene",
-        "Hubungan antar bukti penting",
-        "Dokumentasikan setiap temuan"
-      ]
-    },
-    3: {
-      title: "Psikologi Kriminal",
-      objective: "Memahami perilaku dan motif pelaku kejahatan",
-      theory: `Memahami psikologi pelaku adalah keahlian penting detektif.
-      
-Tipe Pelaku:
-1. Premeditated - Merencanakan dengan matang
-2. Crime of Passion - Tindakan emosional
-3. Serial Offender - Pola perilaku berulang
-4. Organized vs Disorganized
+Tips Observasi:
+1. Perhatikan lingkungan sekitar secara sistematis
+2. Catat perubahan sekecil apapun dari kondisi normal
+3. Gunakan semua indra - penglihatan, pendengaran, penciuman
+4. Verifikasi pengamatan dengan bukti objektif
+5. Jangan terburu-buru menarik kesimpulan`,
 
-Motif Umum:
-- Keuntungan finansial
-- Balas dendam
-- Kebutuhan psikologis
-- Tekanan sosial
+    keyPoints: [
+      'Detail kecil sering menjadi kunci kasus',
+      'Observasi harus objektif tanpa bias',
+      'Dokumentasikan semua temuan',
+      'Verifikasi dengan bukti forensik'
+    ],
 
-Indikator Perilaku:
-- Bahasa tubuh yang mencurigakan
-- Kontradiksi dalam pernyataan
-- Detail yang terlalu sempurna`,
-      keyPoints: [
-        "Motif tidak selalu jelas",
-        "Perhatikan perubahan perilaku",
-        "Konsistensi cerita penting",
-        "Periksa alibi dengan teliti"
+    caseExample: {
+      scenario: 'Di TKP ditemukan cangkir kopi dengan sidik jari yang tidak terdaftar di database polisi.',
+      question: 'Apa langkah selanjutnya yang harus dilakukan detektif?',
+      options: [
+        'A. Mengabaikan karena tidak ada di database',
+        'B. Mencari pemilik cangkir melalui catatan pembelian',
+        'C. Membuang bukti karena tidak berguna',
+        'D. Menunggu sampai ada korban lain'
       ]
     }
   };
 
-  const lessonId = moduleId || 1;
-  const content = lessonContent[lessonId] || lessonContent[1];
-
-  // Jika ada API key, generate lesson dengan AI
-  if (apiKey && apiKey !== 'PASTE_YOUR_GROQ_API_KEY_HERE') {
+  // AI-powered lesson generation
+  if (apiKey && apiKey.startsWith('gsk_')) {
     try {
       const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
@@ -102,37 +54,41 @@ Indikator Perilaku:
         body: JSON.stringify({
           model: 'llama-3.3-70b-versatile',
           messages: [
-            { role: 'system', content: 'Buat pelajaran investigasi kriminal dalam Bahasa Indonesia. Sertakan teori, objektif, dan poin penting.' },
-            { role: 'user', content: `Buat pelajaran untuk modul ${content.title}` }
+            { 
+              role: 'system', 
+              content: `Buatkan lesson konten untuk modul pelatihan detektif dalam format JSON:
+{
+  "lessonTitle": "string",
+  "objective": "string", 
+  "theory": "string (panjang)",
+  "keyPoints": ["array string"],
+  "caseExample": {
+    "scenario": "string",
+    "question": "string",
+    "options": ["array string"]
+  }
+}
+Bahasa Indonesia.` 
+            }
           ],
           temperature: 0.7,
-          max_tokens: 500,
+          max_tokens: 800,
         }),
       });
 
       if (response.ok) {
         const data = await response.json();
-        const aiContent = data.choices?.[0]?.message?.content;
-        if (aiContent) {
-          return res.json({ 
-            success: true, 
-            lesson: { ...content, theory: aiContent }
-          });
-        }
+        try {
+          const lesson = JSON.parse(data.choices?.[0]?.message?.content || '{}');
+          if (lesson.lessonTitle) {
+            return res.json({ success: true, lesson });
+          }
+        } catch (e) {}
       }
     } catch (e) {
-      console.error('AI lesson generation failed:', e);
+      console.error('Lesson error:', e);
     }
   }
 
-  res.json({ 
-    success: true, 
-    lesson: {
-      lessonTitle: `Pelajaran ${lessonNumber}: ${content.title}`,
-      objective: content.objective,
-      theory: content.theory,
-      keyPoints: content.keyPoints
-    }
-  });
+  res.json({ success: true, lesson: demoLesson });
 }
-

@@ -8,10 +8,17 @@ export default async function handler(req, res) {
 
   const { messages, systemPrompt, temperature = 0.8, max_tokens = 900, model = 'llama-3.3-70b-versatile' } = req.body;
   
-  const apiKey = process.env.GROQ_API_KEY;
+  // Support multiple env var names
+  const apiKey = process.env.GROQ_API_KEY || process.env.GROQ_APIKEY || '';
   
-  if (!apiKey || apiKey === 'PASTE_YOUR_GROQ_API_KEY_HERE') {
-    return res.status(500).json({ error: 'GROQ_API_KEY not configured' });
+  console.log('API Key available:', !!apiKey);
+  console.log('API Key length:', apiKey?.length);
+  
+  if (!apiKey || !apiKey.startsWith('gsk_') || apiKey.length < 20) {
+    return res.status(500).json({ 
+      error: 'GROQ_API_KEY not configured',
+      hint: 'Please set GROQ_API_KEY in Vercel Environment Variables'
+    });
   }
 
   try {
@@ -31,6 +38,7 @@ export default async function handler(req, res) {
 
     if (!response.ok) {
       const error = await response.text();
+      console.error('Groq API error:', error);
       return res.status(response.status).json({ error: `Groq API error: ${error}` });
     }
 
@@ -39,6 +47,7 @@ export default async function handler(req, res) {
     
     res.json({ response: result });
   } catch (error) {
+    console.error('Handler error:', error);
     res.status(500).json({ error: error.message });
   }
 }

@@ -7,22 +7,27 @@ export default async function handler(req, res) {
   }
 
   const { sessionId, message } = req.body;
-  const apiKey = process.env.GROQ_API_KEY;
-  
-  if (!apiKey || apiKey === 'PASTE_YOUR_GROQ_API_KEY_HERE') {
-    return res.status(500).json({ error: 'GROQ_API_KEY not configured' });
+  const apiKey = process.env.GROQ_API_KEY || process.env.GROQ_APIKEY || '';
+
+  // Demo response when no API key
+  if (!apiKey || !apiKey.startsWith('gsk_')) {
+    const demoResponses = [
+      "Saya tidak mengerti apa yang Anda maksud...",
+      "Saya hanya bekerja di perusahaan ini, tidak ada yang istimewa.",
+      "Kenapa Anda menanyakan hal seperti itu?",
+      "Saya sudah memberi tahu semuanya kepada polisi.",
+    ];
+    return res.json({
+      response: demoResponses[Math.floor(Math.random() * demoResponses.length)],
+      stressLevel: 30,
+      behaviorFlags: [
+        { type: 'DEFENSIVE', color: '#f59e0b' },
+        { type: 'AVOIDANCE', color: '#6366f1' }
+      ]
+    });
   }
 
-  // System prompt untuk interogasi
-  const systemPrompt = `Anda adalah seorang tersangka dalam kasus kejahatan. 
-- Anda adalah karakter yang bermain peran, BUKAN AI.
-- Jawab dalam Bahasa Indonesia yang natural.
-- Jangan pernah mengakui kejahatan secara langsung.
-- Buat cerita yang konsisten tapi bisa ada celah jika ditekan.
-- Tunjukkan emosi yang sesuai (defensif, gugup, marah).
-- Jika ditanya tentang alibi, berikan jawaban yang bisa diperdebatkan.
-- Usahakan jawaban tidak terlalu panjang (50-100 kata).`;
-
+  // AI-powered interrogation
   try {
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -33,40 +38,54 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         messages: [
-          { role: 'system', content: systemPrompt },
+          { 
+            role: 'system', 
+            content: `Anda adalah seorang tersangka dalam kasus pembunuhan. 
+- Jawablah dalam Bahasa Indonesia
+- Bersikaplah defensif dan tidak cooperatif
+- Sering mengubah cerita atau memberikan informasi yang tidak lengkap
+- Jangan pernah mengakui kejahatan Anda
+- Jaga konsisten cerita Anda tetapi hint bahwa ada yang disembunyikan
+- Tunjukkan tanda-tanda kebohongan sesekali`
+          },
           { role: 'user', content: message }
         ],
-        temperature: 0.85,
+        temperature: 0.8,
         max_tokens: 200,
       }),
     });
 
-    if (!response.ok) {
-      throw new Error(`Groq API error: ${response.status}`);
+    if (response.ok) {
+      const data = await response.json();
+      const aiResponse = data.choices?.[0]?.message?.content || 'Tidak ada response';
+      
+      // Calculate stress level based on questioning
+      const stressLevel = Math.min(100, Math.floor(30 + Math.random() * 50));
+      
+      // Behavior flags
+      const flags = [];
+      if (message.includes('bukti') || message.includes('Bukti')) {
+        flags.push({ type: 'NERVOUS', color: '#ef4444' });
+      }
+      if (message.includes('mengapa') || message.includes('kenapa')) {
+        flags.push({ type: 'DEFENSIVE', color: '#f59e0b' });
+      }
+      
+      return res.json({
+        response: aiResponse,
+        stressLevel,
+        behaviorFlags: flags
+      });
     }
-
-    const data = await response.json();
-    const aiResponse = data.choices?.[0]?.message?.content || 'Maaf, ada masalah dengan sistem.';
-    
-    // Calculate stress level (simulasi)
-    const stressLevel = Math.floor(30 + Math.random() * 50);
-    
-    // Detect behavior flags
-    const behaviorFlags = [];
-    if (stressLevel > 60) {
-      behaviorFlags.push({ type: 'STRESS TINGGI', color: '#ef4444' });
-    }
-    if (aiResponse.includes('tidak') || aiResponse.includes('bukan')) {
-      behaviorFlags.push({ type: 'DEFENSIF', color: '#f59e0b' });
-    }
-    
-    res.json({
-      response: aiResponse,
-      stressLevel,
-      behaviorFlags
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+  } catch (e) {
+    console.error('Interrogation error:', e);
   }
+
+  // Fallback
+  res.json({
+    response: "Saya ingin berbicara dengan pengacara...",
+    stressLevel: 45,
+    behaviorFlags: []
+  });
 }
 

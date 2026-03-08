@@ -3,7 +3,7 @@
 
 export default async function handler(req, res) {
   const { pid } = req.query;
-  const apiKey = process.env.GROQ_API_KEY;
+  const apiKey = process.env.GROQ_API_KEY || process.env.GROQ_APIKEY || '';
   
   // Default profile data
   const defaultReport = {
