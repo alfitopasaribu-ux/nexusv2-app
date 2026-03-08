@@ -1,0 +1,124 @@
+{
+  "id": 1,
+  "title": "Kematian di Lantai 47",
+  "type": "pembunuhan",
+  "difficulty": "PEMULA",
+  "location": "kantor",
+  "description": "CEO Nexacorp ditemukan tewas di ruang rapatnya. Kematian tampak seperti bunuh diri — tapi terlalu rapi untuk menjadi kebetulan.",
+  "victim": {
+    "name": "Arman Saleh",
+    "age": 52,
+    "occupation": "CEO Nexacorp"
+  },
+  "timeline": [
+    "06:45 — Arman tiba di kantor, terlihat gelisah",
+    "09:30 — Rapat dadakan dengan Vera Lim",
+    "11:00 — Suara pertengkaran keras terdengar",
+    "15:15 — Seseorang masuk lift dengan ID palsu",
+    "17:45 — Satpam temukan jasad di ruang rapat"
+  ],
+  "suspects": [
+    {
+      "id": "s1",
+      "name": "Vera Lim",
+      "age": 42,
+      "occupation": "Direktur Keuangan",
+      "motive": "Arman menemukan penggelapan 40 miliar",
+      "alibi": "Mengklaim perjalanan dinas ke Surabaya",
+      "personality": "manipulatif",
+      "psychProfile": "Kalkulatif, terencana, tidak panik di bawah tekanan",
+      "isGuilty": true
+    },
+    {
+      "id": "s2",
+      "name": "Budi Hartono",
+      "age": 48,
+      "occupation": "Wakil CEO",
+      "motive": "Merger perusahaan akan menghancurkan posisinya",
+      "alibi": "Makan siang bersama klien eksternal",
+      "personality": "percaya_diri",
+      "psychProfile": "Ambisius, pandai menyembunyikan kepanikan",
+      "isGuilty": false
+    },
+    {
+      "id": "s3",
+      "name": "Reza Putra",
+      "age": 31,
+      "occupation": "Kepala IT Security",
+      "motive": "Terancam dipecat karena kebocoran data",
+      "alibi": "Di server room sepanjang siang",
+      "personality": "gugup",
+      "psychProfile": "Gugup, obsesif dengan detail teknis, mudah dimanipulasi",
+      "isGuilty": false
+    }
+  ],
+  "evidence": [
+    {
+      "id": "e1",
+      "name": "Cangkir Kopi Arman",
+      "description": "Residu alkaloid sintetis di dasar cangkir",
+      "forensicAnalysis": "Racun tidak ada di database standar — diproduksi secara khusus di laboratorium privat",
+      "isKeyEvidence": true,
+      "isFake": false,
+      "category": "forensik"
+    },
+    {
+      "id": "e2",
+      "name": "Rekaman CCTV Lift",
+      "description": "Seseorang masuk lift jam 15:15 dengan ID karyawan palsu",
+      "forensicAnalysis": "Analisis gaya berjalan: perempuan, tinggi 165-168cm, memakai sepatu hak tinggi",
+      "isKeyEvidence": true,
+      "isFake": false,
+      "category": "digital"
+    },
+    {
+      "id": "e3",
+      "name": "Catatan Tangan Misterius",
+      "description": "Kertas dengan koordinat dan inisial 'V.L'",
+      "forensicAnalysis": "BUKTI PALSU — Analisis tulisan tangan tidak cocok dengan Arman. Kemungkinan ditanam pelaku sebagai pengalih perhatian",
+      "isKeyEvidence": false,
+      "isFake": true,
+      "category": "fisik"
+    },
+    {
+      "id": "e4",
+      "name": "Tiket Pesawat Vera",
+      "description": "Tiket ke Surabaya yang seharusnya digunakan Vera",
+      "forensicAnalysis": "Tiket dibatalkan 2 jam sebelum kematian. Alibi Vera runtuh — ia masih berada di Jakarta",
+      "isKeyEvidence": true,
+      "isFake": false,
+      "category": "digital"
+    }
+  ],
+  "witnesses": [
+    {
+      "name": "Sekretaris Arman",
+      "statement": "Saya mendengar suara pertengkaran sengit sekitar jam 11 pagi. Ada suara wanita yang saya kenal."
+    },
+    {
+      "name": "Satpam Lantai 15",
+      "statement": "Saya melihat seorang wanita tergesa-gesa keluar sekitar jam 16:00, wajahnya tertutup masker."
+    }
+  ],
+  "hiddenContradictions": [
+    "Tiket Vera dibatalkan namun ia mengklaim masih di Surabaya",
+    "Log akses server Reza menunjukkan dua terminal aktif bersamaan — mustahil secara fisik",
+    "Tidak ada rekaman telepon dari Vera selama jam krusial"
+  ],
+  "cognitiveTraps": [
+    "Catatan dengan inisial V.L terlalu obvious — ini jebakan yang ditanam",
+    "Reza tampak paling gugup padahal paling tidak bersalah",
+    "Alibi Budi tampak kuat namun sangat mudah dikonfirmasi — tidak mungkin pelaku"
+  ],
+  "solution": {
+    "culpritId": "s1",
+    "method": "Vera meracuni kopi Arman dengan alkaloid sintetis yang diproduksi khusus, kemudian membuat adegan bunuh diri menggunakan ID karyawan yang dicuri dari sistem Reza",
+    "explanation": "Vera panik setelah Arman menemukan penggelapan 40 miliar selama 3 tahun. Ia membatalkan tiket, kembali ke kantor menggunakan ID palsu, meracuni Arman, lalu meninggalkan catatan palsu untuk menunjukkan alibi dirinya sendiri sebagai pengalih perhatian. Bukti kunci: tiket yang dibatalkan, rekaman CCTV gaya berjalan, dan residu racun khusus.",
+    "keyEvidence": [
+      "e1",
+      "e2",
+      "e4"
+    ]
+  },
+  "pointReward": 300
+}

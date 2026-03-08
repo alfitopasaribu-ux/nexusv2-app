@@ -1,48 +1,36 @@
-# NEXUS v3.0 - Perbaikan Build Vercel
+# TODO: Perbaiki NEXUS_v3 untuk Vercel Deployment
 
-## TODO List:
+## Masalah
+- Vercel Hobby plan max 12 Serverless Functions
+- NEXUS_v3 punya 14 API routes di folder api/
+- Error: "No more than 12 Serverless Functions can be added"
 
-- [x] 1. Analisis struktur proyek dan masalah build
-- [x] 2. Update vercel.json dengan konfigurasi yang benar
-- [x] 3. Update vite.config.js untuk Vercel (dengan plugin copy cases)
-- [x] 4. Update frontend/src/api.js untuk bekerja dengan Vercel API
-- [x] 5. Buat Vercel API Routes (serverless functions)
-- [ ] 6. Deploy ke Vercel dan test
+## Solusi
+Ubah jadi client-side AI (seperti nexus-app) - ga perlu serverless functions Kerja
 
-## Perubahan yang sudah dilakukan:
+###
 
-### 1. vercel.json
-- Build command: `cd frontend && npm install && npm run build`
-- Output directory: `frontend/dist`
-- Rewrites untuk /api dan /cases routes
+## Rencana Step 1: Hapus folder api/ (14 file)
+- [x] Hapus NEXUS_v3/api/ folder
 
-### 2. vite.config.js
-- Menambahkan plugin untuk menyalin folder cases ke public/cases saat build
-- Konfigurasi build yang dioptimalkan
+### Step 2: Update package.json
+- [x] Tambah groq-sdk dependency
 
-### 3. frontend/src/api.js
-- Diubah untuk menggunakan API routes `/api/*`
-- Support untuk Vercel environment detection
-- Semua endpoint menunjuk ke API routes
+### Step 3 API baru
+- [x] Buat file NEXUS_v3/frontend/src/api/groq.js
+- [x] Update NEXUS_v3/frontend/src/api.js
 
-### 4. Vercel API Routes (Serverless Functions)
-- `/api/health.js` - Health check
-- `/api/ai/call.js` - Groq AI call
-- `/api/interrogation/start.js` - Start interrogation session
-- `/api/interrogation/message.js` - AI interrogation responses
-- `/api/mindreader.js` - Mind reader analysis
-- `/api/academy/modules.js` - Academy modules list
-- `/api/academy/lesson.js` - Generate lesson with AI
-- `/api/academy/evaluate.js` - Evaluate answers
-- `/api/cognitive/[pid]/report.js` - Cognitive report
-- `/api/network/register.js` - Register player
-- `/api/network/leaderboard.js` - Leaderboard
-- `/api/network/daily.js` - Daily case
-- `/api/omega/next.js` - Omega case generation
-- `/api/cases/[id]/solve.js` - Case solution validation
+### Step 4: Environment Variable
+- [x] Buat NEXUS_v3/frontend/.env
 
-## Langkah Selanjutnya:
-1. Push perubahan ke GitHub
-2. Vercel akan auto-deploy
-3. Pastikan GROQ_API_KEY sudah di-set di Vercel Environment Variables
+### Step 5: Test Build
+- [x] npm install
+- [x] npm run build
+
+### Step 6: Deploy
+- [ ] Git commit & push
+- [ ] Deploy ke Vercel
+- [ ] Set VITE_GROQ_API_KEY di Vercel
+
+## Status: SIAP DEPLOY ✅
 

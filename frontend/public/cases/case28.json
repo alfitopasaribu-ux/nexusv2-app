@@ -1,0 +1,163 @@
+{
+  "id": 28,
+  "title": "Bayangan Masa Lalu",
+  "type": "orang_hilang",
+  "difficulty": "AHLI",
+  "location": "restoran",
+  "description": "Kasus AHLI #28: Investigasi mendalam diperlukan. Tidak semua yang terlihat adalah kebenaran. Setiap detail memiliki makna tersembunyi — bahkan yang tampak tidak relevan.",
+  "victim": {
+    "name": "Korban-28",
+    "age": 58,
+    "occupation": "Profesional Terkemuka"
+  },
+  "timeline": [
+    "9:00 — Peristiwa pertama terdeteksi oleh sistem keamanan",
+    "11:30 — Bukti awal ditemukan di lokasi kejadian",
+    "9:00 — Kejadian utama terjadi",
+    "15:00 — Pihak ketiga menemukan dan melaporkan",
+    "15:00 — Tim investigasi tiba di lokasi"
+  ],
+  "suspects": [
+    {
+      "id": "s1",
+      "name": "Dr. Ahmad Santoso",
+      "age": 28,
+      "occupation": "Eksekutif",
+      "motive": "Motif finansial tersembunyi",
+      "alibi": "Mengklaim berada di luar kota",
+      "personality": "gugup",
+      "psychProfile": "Kepribadian gugup dengan kecenderungan kontrol berlebihan",
+      "isGuilty": true
+    },
+    {
+      "id": "s2",
+      "name": "Nona Rania Wijaya",
+      "age": 35,
+      "occupation": "Analis Keuangan",
+      "motive": "Dendam personal mendalam",
+      "alibi": "Bersama saksi yang meragukan",
+      "personality": "manipulatif",
+      "psychProfile": "Kepribadian manipulatif dengan kecenderungan manipulasi terencana",
+      "isGuilty": false
+    },
+    {
+      "id": "s3",
+      "name": "Pak Hendra Pratama",
+      "age": 42,
+      "occupation": "Konsultan",
+      "motive": "Kepentingan ideologi",
+      "alibi": "Rekaman yang bisa dimanipulasi",
+      "personality": "percaya_diri",
+      "psychProfile": "Kepribadian percaya_diri dengan kecenderungan tekanan tersembunyi",
+      "isGuilty": false
+    },
+    {
+      "id": "s4",
+      "name": "Nona Sari Kusuma",
+      "age": 49,
+      "occupation": "Agen Keamanan",
+      "motive": "Tekanan pihak ketiga yang kuat",
+      "alibi": "Alibi tidak dapat dikonfirmasi",
+      "personality": "pendiam",
+      "psychProfile": "Kepribadian pendiam dengan kecenderungan denial mendalam",
+      "isGuilty": false
+    },
+    {
+      "id": "s5",
+      "name": "Dr. Ivan Rahman",
+      "age": 56,
+      "occupation": "Ilmuwan",
+      "motive": "Upaya menutupi kejahatan sebelumnya",
+      "alibi": "Mengklaim berada di luar kota",
+      "personality": "penuh_kebohongan",
+      "psychProfile": "Kepribadian penuh_kebohongan dengan kecenderungan kontrol berlebihan",
+      "isGuilty": false
+    }
+  ],
+  "evidence": [
+    {
+      "id": "e1",
+      "name": "Rekaman Digital Terenkripsi",
+      "description": "Bukti 1 yang ditemukan selama investigasi kasus #28 — memerlukan analisis mendalam",
+      "forensicAnalysis": "Analisis mendalam mengkonfirmasi keterlibatan langsung tersangka dalam insiden utama. Konsisten dengan timeline kejadian.",
+      "isKeyEvidence": true,
+      "isFake": false,
+      "category": "fisik"
+    },
+    {
+      "id": "e2",
+      "name": "Dokumen Forensik Kritis",
+      "description": "Bukti 2 yang ditemukan selama investigasi kasus #28 — memerlukan analisis mendalam",
+      "forensicAnalysis": "Analisis mendalam mengkonfirmasi keterlibatan langsung tersangka dalam insiden utama. Konsisten dengan timeline kejadian.",
+      "isKeyEvidence": true,
+      "isFake": false,
+      "category": "digital"
+    },
+    {
+      "id": "e3",
+      "name": "Kesaksian Kontradiktif",
+      "description": "Bukti 3 yang ditemukan selama investigasi kasus #28 — memerlukan analisis mendalam",
+      "forensicAnalysis": "Analisis mendalam mengkonfirmasi keterlibatan langsung tersangka dalam insiden utama. Konsisten dengan timeline kejadian.",
+      "isKeyEvidence": true,
+      "isFake": false,
+      "category": "forensik"
+    },
+    {
+      "id": "e4",
+      "name": "Jejak Digital Tersembunyi",
+      "description": "Bukti 4 yang ditemukan selama investigasi kasus #28 — memerlukan analisis mendalam",
+      "forensicAnalysis": "Analisis mendalam mengkonfirmasi keterlibatan langsung tersangka dalam insiden utama. Konsisten dengan timeline kejadian.",
+      "isKeyEvidence": false,
+      "isFake": false,
+      "category": "testimoni"
+    },
+    {
+      "id": "e5",
+      "name": "Artefak Fisik Penting",
+      "description": "Bukti 5 yang ditemukan selama investigasi kasus #28 — memerlukan analisis mendalam",
+      "forensicAnalysis": "BUKTI PALSU — Analisis menunjukkan manipulasi yang terencana. Dibuat untuk mengalihkan penyelidik dari pelaku sesungguhnya",
+      "isKeyEvidence": false,
+      "isFake": true,
+      "category": "fisik"
+    },
+    {
+      "id": "e6",
+      "name": "Laporan Laboratorium",
+      "description": "Bukti 6 yang ditemukan selama investigasi kasus #28 — memerlukan analisis mendalam",
+      "forensicAnalysis": "BUKTI PALSU — Analisis menunjukkan manipulasi yang terencana. Dibuat untuk mengalihkan penyelidik dari pelaku sesungguhnya",
+      "isKeyEvidence": false,
+      "isFake": true,
+      "category": "digital"
+    }
+  ],
+  "witnesses": [
+    {
+      "name": "Saksi Utama 28A",
+      "statement": "Saya menyaksikan sesuatu yang sangat mencurigakan sekitar jam 12 — detail yang awalnya saya anggap tidak penting"
+    },
+    {
+      "name": "Saksi Pendukung 28B",
+      "statement": "Ada seseorang yang tidak dikenal di lokasi beberapa jam sebelum kejadian utama"
+    }
+  ],
+  "hiddenContradictions": [
+    "Tersangka pertama memberikan alibi yang bertentangan dengan rekaman digital",
+    "Bukti terakhir adalah palsu yang ditanam untuk mengalihkan investigasi",
+    "Timeline tidak kronologis — ada kejadian yang terjadi lebih awal dari yang dideklarasikan"
+  ],
+  "cognitiveTraps": [
+    "Tersangka yang paling mencurigakan seringkali bukan pelaku sesungguhnya",
+    "Bukti ke-6 adalah jebakan kognitif yang dirancang AI"
+  ],
+  "solution": {
+    "culpritId": "s1",
+    "method": "Tersangka pertama menggunakan metode yang telah direncanakan dengan cermat, memanfaatkan kepercayaan dan akses khusus yang dimiliki",
+    "explanation": "Melalui analisis bukti forensik yang cermat, rekonstruksi timeline yang tepat, dan identifikasi inkonsistensi dalam alibi — Tersangka pertama terbukti sebagai pelaku. Motif utama: Motif finansial tersembunyi. Bukti kunci menghubungkan mereka langsung ke kejadian utama.",
+    "keyEvidence": [
+      "e1",
+      "e2"
+    ]
+  },
+  "pointReward": 750,
+  "isOmega": false
+}
