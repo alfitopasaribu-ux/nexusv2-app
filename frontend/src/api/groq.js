@@ -5,11 +5,13 @@ import Groq from 'groq-sdk'
 
 // Get API key dari environment variable
 const getApiKey = () => {
-  const key = import.meta.env.VITE_GROQ_API_KEY
-  if (!key || key === 'gsk_your_key_here' || key.includes('your_key')) {
-    return null
+  // Dari environment variable (Vercel) atau .env.local
+  const envKey = import.meta.env.VITE_GROQ_API_KEY
+  if (envKey && envKey.startsWith('gsk_') && envKey.length > 20) {
+    return envKey
   }
-  return key
+  // Return null kalau belum diset - user harus set di Vercel
+  return null
 }
 
 // Initialize Groq client
