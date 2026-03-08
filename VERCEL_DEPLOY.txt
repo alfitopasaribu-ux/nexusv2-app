@@ -1,0 +1,41 @@
+# NEXUS v3.0 - Deploy ke Vercel
+
+## Cara Deploy dari GitHub ke Vercel:
+
+### Langkah 1: Buka Vercel
+Buka: https://vercel.com/dashboard
+
+### Langkah 2: Add New Project
+- Klik tombol "Add New..." 
+- Pilih "Project"
+
+### Langkah 3: Import Repository
+- Cari: alfitopasaribu-ux/nexusv2-app
+- Klik "Import"
+
+### Langkah 4: Configure Project
+- Project Name: nexus-fito (atau nama lain)
+- Framework Preset: Other
+- Build Command: (kosongkan atau isi: npm run build)
+- Output Directory: (kosongkan)
+
+### Langkah 5: Environment Variables (PENTING!)
+Klik "Environment Variables" dan tambah:
+- Name: GROQ_API_KEY
+- Value: (isi dengan API key Groq Anda, mulai dengan gsk_...)
+- Klik "Add"
+
+### Langkah 6: Deploy
+- Klik "Deploy"
+- Tunggu ~2 menit
+
+### Langkah 7: Selesai!
+- Nanti dapat link seperti: https://nexus-fito.vercel.app
+
+## Catatan Penting:
+- API key Anda TIDAK akan terpush ke GitHub karena sudah ada di .gitignore
+- Pastikan GROQ_API_KEY sudah benar di Vercel
+- Kalau ada error, cek "View Function Logs" di Vercel
+
+## Link Hasil Deploy:
+https://nexus-fito.vercel.app

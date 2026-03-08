@@ -1,0 +1,26 @@
+{
+  "builds": [
+    {
+      "src": "frontend/package.json",
+      "use": "@vercel/vite",
+      "config": {
+        "installCommand": "cd frontend && npm install",
+        "buildCommand": "npm run build --if-present",
+        "outputDirectory": "frontend/dist"
+      }
+    }
+  ],
+  "env": {
+    "GROQ_API_KEY": "@groq-api-key"
+  },
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/dist/$1"
+    }
+  ]
+}
