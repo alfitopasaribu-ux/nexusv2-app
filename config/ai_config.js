@@ -75,7 +75,7 @@ Bahasa Indonesia. Kasus harus menantang tapi bisa dipecahkan dalam 1 hari.`,
   ],
 };
 
-if (!AI_CONFIG.apiKey || AI_CONFIG.apiKey === 'PASTE_YOUR_GROQ_API_KEY_HERE') {
+if (!AI_CONFIG.apiKey || AI_CONFIG.apiKey === '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') {
   console.warn('⚠  NEXUS: GROQ_API_KEY tidak ditemukan di .env');
   console.warn('   Tambahkan: GROQ_API_KEY=gsk_xxxx di file .env');
 }
