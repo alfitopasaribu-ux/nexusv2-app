@@ -447,26 +447,62 @@ PENTING: Respons harus dalam JSON valid. Hapus semua backtick dan format kode.`
     return { lesson }
   },
 
-  // Academy - evaluate answer
+  // Academy - evaluate answer with proper AI evaluation
   evalAnswer: async (data) => {
-    const prompt = `Soal: ${data.question}
-Jawaban user: ${data.answer}
-
-Evaluasi jawaban ini dan berikan feedback. 
-Format JSON: isCorrect (boolean), score (0-100), feedback (string), improvement (string), xpEarned (number)`
+    // Get the correct answer from the question data
+    const correctAnswer = data.correctAnswer || ''
+    const userAnswer = data.answer || ''
+    const question = data.question || ''
     
-    const result = await callGroq(prompt, 'You are NEXUS educational AI.')
+    // Use AI to properly evaluate the answer
+    const prompt = `Anda adalah guru detektif yang sangat ketat.
+
+SOAL: ${question}
+JAWABAN YANG BENAR: ${correctAnswer}
+JAWABAN SISWA: ${userAnswer}
+
+Evaluasi jawaban siswa dengan sangat ketat dan akurat.
+
+PENTING:
+- Bandingkan jawaban siswa dengan jawaban yang benar
+- Jika jawaban siswa SAMA atau Hampir SAMA dengan jawaban benar → BENAR
+- Jika jawaban siswa BERBEDA atau TIDAK COCOK → SALAH
+- Jangan pernah mengatakan benar jika jawaban tidak tepat!
+
+Kembalikan dalam format JSON (tanpa backtick):
+{
+  "isCorrect": true atau false,
+  "score": 0-100,
+  "feedback": "Penjelasan detail mengapa jawaban benar/salah",
+  "improvement": "Saran perbaikan jika salah",
+  "xpEarned": 10-100
+}
+
+Skor yang tepat:
+- Jawaban BENAR: skor 80-100, xp 50-100
+- Jawaban SALAH: skor 0-40, xp 0-10
+- Jangan pernah berikan skor di atas 80 jika jawaban tidak tepat!`
+
+    const result = await callGroq(prompt, 'Anda adalah guru detektif. Selalu kembalikan JSON valid.')
     
     let evalResult
     try {
-      evalResult = JSON.parse(result)
+      // Try to extract JSON from response
+      const jsonMatch = result.match(/\{[\s\S]*\}/)
+      if (jsonMatch) {
+        evalResult = JSON.parse(jsonMatch[0])
+      } else {
+        throw new Error('No JSON found')
+      }
     } catch {
+      // Default fallback - assume wrong if can't parse
+      const isAnswerMatch = userAnswer.toLowerCase().trim() === correctAnswer.toLowerCase().trim()
       evalResult = {
-        isCorrect: true,
-        score: 75,
-        feedback: 'Jawaban cukup baik!',
-        improvement: 'Perhatikan detail lebih lanjut',
-        xpEarned: 50
+        isCorrect: isAnswerMatch,
+        score: isAnswerMatch ? 85 : 25,
+        feedback: isAnswerMatch ? 'Jawaban Anda benar!' : 'Jawaban Anda kurang tepat.',
+        improvement: isAnswerMatch ? 'Pertahankan!' : 'Pelajari kembali materi ini.',
+        xpEarned: isAnswerMatch ? 75 : 5
       }
     }
     
