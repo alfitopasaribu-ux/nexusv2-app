@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
 import { api } from './api.js'
-import './styles/nexus.css'
 
 // ── Constants ───────────────────────────────────────────────
 const RANKS = [

@@ -1,407 +1,378 @@
+// NEXUS_v3 API - Client-side with local data & Groq AI
 import { callGroq } from './api/groq.js'
 
-// Local data - load from public/cases/
-const loadCases = async () => {
-  const cases = []
-  for (let i = 1; i <= 50; i++) {
+// Local case data - load from public/cases
+const CASES = []
+
+// Initialize cases from public/cases
+async function loadCases() {
+  if (CASES.length > 0) return CASES
+  
+  const caseIds = Array.from({length: 50}, (_, i) => String(i + 1).padStart(2, '0'))
+  const loaded = []
+  
+  for (const id of caseIds) {
     try {
-      const res = await fetch(`/cases/case${String(i).padStart(2, '0')}.json`)
-      if (res.ok) {
-        const data = await res.json()
-        cases.push(data)
+      const resp = await fetch(`/cases/case${id}.json`)
+      if (resp.ok) {
+        const data = await resp.json()
+        loaded.push(data)
       }
     } catch (e) {
-      // skip
+      // Case file not found, skip
     }
   }
-  return { cases }
-}
-
-const loadCase = async (id) => {
-  try {
-    const res = await fetch(`/cases/case${String(id).padStart(2, '0')}.json`)
-    if (res.ok) {
-      return { case: await res.json() }
-    }
-  } catch (e) {
-    // skip
+  
+  // If no cases loaded, use fallback
+  if (loaded.length === 0) {
+    loaded.push(...getFallbackCases())
   }
-  return { case: null }
+  
+  CASES.push(...loaded)
+  return CASES
 }
 
-// Academy modules - static data
-const modules = [
-  { id: 'obs', title: 'Observasi Forensik', desc: 'Pelajari teknik mengamati bukti fisik', icon: '🔍', level: 1 },
-  { id: 'ded', title: 'Deduksi Logis', desc: 'Menghubungkan fakta secara logis', icon: '🧩', level: 2 },
-  { id: 'bias', title: 'Anti Bias Kognitif', desc: 'Menghindari kesalahan berpikir', icon: '🛡️', level: 3 },
-  { id: 'pola', title: 'Pengenalan Pola', desc: 'Mengidentifikasi pola kejahatan', icon: '📊', level: 4 },
-  { id: 'inter', title: 'Interogasi Lanjutan', desc: 'Teknik mendapatkan kebenaran', icon: '💬', level: 5 },
+function getFallbackCases() {
+  return [
+    {id: '01', title: 'Pembunuhan di Mansion', type: 'pembunuhan', difficulty: 'PEMULA', pointReward: 100, description: 'Tuan besar ditemukan tewas di ruang kerjanya...', suspects: [], evidence: []},
+    {id: '02', title: 'Kehilangan Berlian', type: 'orang_hilang', difficulty: 'PEMULA', pointReward: 100, description: 'Berlian langka lenyap dari brankas...', suspects: [], evidence: []},
+    {id: '03', title: 'Konspirasi Corp', type: 'konspirasi', difficulty: 'MAHIR', pointReward: 200, description: 'Terdapat konspirasi di perusahaan besar...', suspects: [], evidence: []},
+    {id: '04', title: 'Serangan Siber', type: 'kejahatan_siber', difficulty: 'MAHIR', pointReward: 250, description: 'Sistem keamanan dibobol hacker...', suspects: [], evidence: []},
+    {id: '05', title: 'Pembunuhan Berantai', type: 'pembunuh_berantai', difficulty: 'AHLI', pointReward: 500, description: 'Serangan beruntun menewaskan korban...', suspects: [], evidence: []},
+  ]
+}
+
+// Mock data for modules
+const MODULES = [
+  { id: 'obs', icon: '🔍', title: 'Observasi Forensic', desc: 'Latih kemampuan mengamati detail', level: 1 },
+  { id: 'ded', icon: '🧠', title: 'Deduksi Logis', desc: 'Belajar berpikir sistematis', level: 2 },
+  { id: 'bias', icon: '⚖️', title: 'Anti-Bias', desc: 'Kurangi kesalahan kognitif', level: 3 },
+  { id: 'pola', icon: '📊', title: 'Pengenalan Pola', desc: 'Identifikasi pola tersembunyi', level: 4 },
+  { id: 'inter', icon: '💬', title: 'Interogasi', desc: 'Teknik mendapatkan informasi', level: 5 },
 ]
 
-const lessons = {
-  obs: {
-    title: 'Dasar Observasi Forensik',
-    objective: 'Pelajari cara mengidentifikasi dan menganalisis bukti fisik',
-    theory: 'Observasi forensik adalah keterampilan fundamental dalam investigasi kriminal. Seorang detektif harus mampu:\n\n1. Mengamati detail kecil yang sering terlewat\n2. Mencatat posisi dan kondisi bukti\n3. Mengidentifikasi bukti yang tidak konsisten\n4. Melindungi bukti dari kontaminasi',
-    keyPoints: [
-      'Perhatikan anomali dalam scene',
-      'Dokumentasikan sebelum menyentuh',
-      'Gunakan multiple sense observations',
-      'Cross-verify dengan testimony'
-    ],
-    caseExample: {
-      scenario: 'Di sebuah kantor, ditemukan jenazah. Meja kerja berantakan, tapi laci terkunci. Laptop ada di meja tapi dalam kondisi sleep.',
-      question: 'Apa yang aneh dari scene ini?',
-      options: [
-        'Laci terkunci menandakan ada yang disembunyikan',
-        'Laptop sleep menandakan pengguna baru saja pergi',
-        'Meja berantakan adalah pura-pura',
-        'Semua benar'
-      ]
-    }
-  },
-  ded: {
-    title: 'Deduksi Logis',
-    objective: 'Belajar menarik kesimpulan dari fakta',
-    theory: 'Deduksi adalah proses menarik kesimpulan logis dari premis-premis yang diketahui. Dalam investigasi:\n\n1. Kumpulkan semua fakta\n2. Identifikasi hubungan antar fakta\n3. Cari kontradiksi atau kejanggalan\n4. Bangun teori yang解释semu',
-    keyPoints: [
-      'Fakta > Interpretasi',
-      'Korrelation bukan kausalitas',
-      'Occam\'s razor - solusi sederhana lebih mungkin',
-      'Test teori dengan bukti'
-    ],
-    caseExample: {
-      scenario: 'Tersangka A memiliki kunci ruangan. Tersangka B ditemukan di dalam ruangan terkunci. Tidak ada tanda paksaan.',
-      question: 'Si lebih mungkinapa yang melakukan ini?',
-      options: [
-        'Tersangka A - ada kunci',
-        'Tersangka B - ada di TKP',
-        'Perlu info lebih lanjut',
-        'Tidak bisa disimpulkan'
-      ]
-    }
-  },
-  bias: {
-    title: 'Menghindari Bias Kognitif',
-    objective: 'Mengenali dan mengatasi bias dalam berpikir',
-    theory: 'Otak manusia rentan terhadap berbagai bias kognitif:\n\n1. Confirmation Bias - mencari yang sesuai pendapat\n2. Anchoring - terlalu bergantung pada info pertama\n3. Availability Heuristic - menilai dari yang mudah diingat\n4. Sunk Cost Fallacy - terus wegen karena sudah terlanjur',
-    keyPoints: [
-      'Selalu cari bukti yang melawan teori',
-      'Hindari jump to conclusion',
-      'Pikirkan alternative explanations',
-      'Minta second opinion'
-    ],
-    caseExample: {
-      scenario: 'Detektif yakin pelaku adalah X karena profilnya cocok. Semua bukti diinterpretasikan untuk mendukung teori ini.',
-      question: 'Apa yang salah dalam pendekatan ini?',
-      options: [
-        'Harus percaya first impression',
-        'Mengabaikan bukti yang tidak sesuai',
-        'Profiling selalu akurat',
-        'Tidak ada yang salah'
-      ]
-    }
-  },
-  pola: {
-    title: 'Pengenalan Pola Kejahatan',
-    objective: 'Mengidentifikasi pola dalam perilaku kriminal',
-    theory: 'Banyak kejahatan menunjukkan pola tertentu:\n\n1. M.O. (Modus Operandi) - cara kejahatan dilakukan\n2. Signature - karakteristik unik pelaku\n3. Geographic profiling - area beroperasi\n4. Temporal patterns - waktu kejadian',
-    keyPoints: [
-      'Catat semua detail M.O.',
-      'Bandingkan dengan database kasus',
-      'Perhatikan signature behaviors',
-      'Map lokasi kejadian'
-    ],
-    caseExample: {
-      scenario: 'Semua perampokan terjadi malam hari, di toko emas, dengan pelaku menyandera anak sebagai tameng.',
-      question: 'Apa pola yang bisa diidentifikasi?',
-      options: [
-        'Target acak',
-        'Sensitivitas terhadap keamanan',
-        'Penggunaan sandera',
-        'Semua di atas'
-      ]
-    }
-  },
-  inter: {
-    title: 'Teknik Interogasi',
-    objective: 'Menguasai teknik mendapatkan kebenaran',
-    theory: 'Interogasi efektif membutuhkan:\n\n1. Membangun rapport\n2. Menggunakan silence strategis\n3. Observation bahasa tubuh\n4. Creating inconsistencies\n5. Psychology pressures',
-    keyPoints: [
-      'Dengarkan lebih dari berbicara',
-      'Perhatikan nonverbal cues',
-      'Gunakan silence sebagai weapons',
-      'Ciptakan tekanan psikologis'
-    ],
-    caseExample: {
-      scenario: 'Ters alibi bahwaangka memberikan ia di rumah sendirian menonton TV. Remote TV ditemukan di dapur, bukan di ruang tamu.',
-      question: 'Apa yang harus dilakukan?',
-      options: [
-        'Accept alibi',
-        'Konfrontasi dengan inconsistency',
-        'Tanya tentang program TV',
-        'Biarkan saja'
-      ]
-    }
-  }
-}
-
-// Simulated leaderboard data
-const leaderboard = [
-  { id: 'p1', name: 'Detektif Akbar', rank: 'DETEKTIF UTAMA', points: 15420, solved: 48 },
-  { id: 'p2', name: 'Detektif Salsa', rank: 'ANALIS KRIMINAL', points: 8920, solved: 31 },
-  { id: 'p3', name: 'Detektif Reza', rank: 'INVESTIGATOR', points: 5400, solved: 22 },
-  { id: 'p4', name: 'Detektif Maya', rank: 'INVESTIGATOR', points: 3800, solved: 18 },
-  { id: 'p5', name: 'Detektif Budi', rank: 'DETEKTIF JUNIOR', points: 2100, solved: 12 },
+// Mock leaderboard
+const MOCK_LEADERBOARD = [
+  { id: 'user1', name: 'Detektif_01', rank: 'DETEKTIF JUNIOR', points: 2500, solved: 12 },
+  { id: 'user2', name: 'Detektif_02', rank: 'INVESTIGATOR', points: 4200, solved: 25 },
+  { id: 'user3', name: 'Detektif_03', rank: 'ANALIS KRIMINAL', points: 8500, solved: 48 },
 ]
 
-// AI-powered functions
+// Interrogation sessions (in-memory)
+const interroSessions = new Map()
+
 export const api = {
-  // Health check - simulate
-  health: () => Promise.resolve({ 
-    aiReady: true, 
-    model: 'llama-3.3-70b-versatile',
-    provider: 'groq'
-  }),
+  // Health check - always return AI ready if Groq key exists
+  health: async () => {
+    const hasKey = import.meta.env.VITE_GROQ_API_KEY && 
+                   !import.meta.env.VITE_GROQ_API_KEY.includes('your_key')
+    return { 
+      status: 'ok', 
+      aiReady: hasKey,
+      message: hasKey ? 'Groq API connected' : 'Add VITE_GROQ_API_KEY in Vercel'
+    }
+  },
 
   // Get all cases
-  getCases: () => loadCases(),
+  getCases: async () => {
+    const cases = await loadCases()
+    return { cases }
+  },
 
   // Get single case
-  getCase: (id) => loadCase(id),
-
-  // Solve case - AI powered
-  solveCase: async (caseId, data) => {
-    const caseData = await loadCase(caseId)
-    const caseInfo = caseData.case
-    
-    const prompt = `Anda adalah sistem verifikasi kasus kriminal. 
-
-Kasus: ${caseInfo?.title}
-Deskripsi: ${caseInfo?.description}
-
-Tersangka yang dipilih: ${data.suspectId}
-Teori pengguna: ${data.theory}
-
-Pelaku sebenarnya: ${caseInfo?.solution?.culpritId}
-Penjelasan: ${caseInfo?.solution?.explanation}
-
-Evaluasi apakah teori pengguna benar. Berikan response dalam format JSON:
-{
-  "correct": boolean,
-  "explanation": "penjelasan detail",
-  "pointReward": number,
-  "culpritName": "nama pelaku"
-}`
-
-    const result = await callGroq(prompt, 'Anda adalah AI verification system untuk game investigasi. Selalu respond dalam format JSON.')
-    
-    try {
-      const parsed = JSON.parse(result)
-      return { result: parsed }
-    } catch {
-      // Fallback - auto verify based on suspect ID
-      const isCorrect = data.suspectId === caseInfo?.solution?.culpritId
-      return {
-        result: {
-          correct: isCorrect,
-          explanation: isCorrect ? 'Selamat! Teori Anda benar!' : `Pelaku sebenarnya adalah ${caseInfo?.solution?.culpritId}`,
-          pointReward: isCorrect ? caseInfo?.pointReward || 300 : 0,
-          culpritName: caseInfo?.solution?.culpritId || 'Tidak diketahui'
+  getCase: async (id) => {
+    const cases = await loadCases()
+    const found = cases.find(c => c.id === id || c.id === String(id).padStart(2, '0'))
+    if (!found) {
+      // Return a default case structure
+      return { 
+        case: {
+          id,
+          title: `Kasus #${id}`,
+          type: 'pembunuhan',
+          difficulty: 'MAHIR',
+          description: 'Kasus investigasi sedang berlangsung...',
+          suspects: [
+            { id: 's1', name: 'Tersangka A', occupation: 'Pegawai', lieScore: 45, personality: 'Introvert', motive: 'Tidak ada', alibi: 'Di rumah', psychProfile: 'Normal' },
+            { id: 's2', name: 'Tersangka B', occupation: 'Manajer', lieScore: 65, personality: 'Ekstrovert', motive: 'Uang', alibi: 'Di kantor', psychProfile: 'Ambisius' },
+          ],
+          evidence: [
+            { id: 'e1', name: 'Bukti DNA', description: 'Sampel darah di TKP', isKeyEvidence: true, forensicAnalysis: 'DNA cocok dengan Tersangka A' },
+            { id: 'e2', name: 'CCTV', description: 'Rekaman kamera keamanan', isKeyEvidence: false, forensicAnalysis: 'Terlihat sosok memasuki gedung jam 10 malam' },
+          ],
+          timeline: ['Jam 08:00 - Korban terakhir terlihat hidup', 'Jam 22:00 - Terjadi sesuatu', 'Jam 06:00 - Tubuh ditemukan'],
+          victim: { name: 'John Doe', age: 45, occupation: 'Wiraswasta' }
         }
       }
     }
+    return { case: found }
   },
 
-  // Interrogation - start
-  startInterro: async (data) => {
-    const caseData = await loadCase(data.caseId)
-    const suspect = caseData.case?.suspects?.find(s => s.id === data.suspectId)
+  // Solve case - use Groq AI
+  solveCase: async (caseId, data) => {
+    const cases = await loadCases()
+    const caseData = cases.find(c => c.id === caseId || c.id === String(caseId).padStart(2, '0'))
     
-    const prompt = `Anda adalah ${suspect?.name}, seorang ${suspect?.occupation} dengan profil psikologi: ${suspect?.psychProfile}
+    const prompt = `Kasus: ${caseData?.title || caseId}
+Theori: ${data.theory}
+Tersangka yang dipilih: ${data.suspectId}
 
-Anda adalah tersangka dalam kasus: ${caseData.case?.title}
-Motif: ${suspect?.motive}
-Alibi: ${suspect?.alibi}
-
-Saat diinterogasi, Anda harus:
-- Menjawab sesuai personality Anda
-- Bisa berbohong untuk melindungi diri
-- Jangan langsung jujur tentang peran Anda
-- Tunjukkan tanda-tanda nervous jika ditekan
-
-Mulai interogasi dengan memperkenalkan diri dan keadaan Anda.`
-
-    const intro = await callGroq(`Jawab dalam 1-2 kalimat. Perkenalkan diri Anda sebagai ${suspect?.name}.`, prompt)
+Analisis apakah teorie ini benar atau salah. Jelaskan mengapa.`
+    
+    const result = await callGroq(prompt, 'You are NEXUS AI detective. Analyze the solution and determine if it is correct. Return JSON with: correct (boolean), culpritName (string), explanation (string), pointReward (number).')
+    
+    // Parse the result - try to extract correct answer
+    const isCorrect = result.toLowerCase().includes('"correct":true') || 
+                      result.toLowerCase().includes('benar') ||
+                      result.toLowerCase().includes('correct')
     
     return {
-      sessionId: `session_${Date.now()}`,
-      response: intro,
+      result: {
+        correct: isCorrect,
+        culpritName: caseData?.suspects?.[0]?.name || 'Tersangka A',
+        explanation: result,
+        pointReward: isCorrect ? (caseData?.pointReward || 100) : 0
+      }
+    }
+  },
+
+  // Interrogation - start session
+  startInterro: async (data) => {
+    const sessionId = 'session_' + Date.now()
+    const cases = await loadCases()
+    const caseData = cases.find(c => c.id === data.caseId)
+    const suspect = caseData?.suspects?.find(s => s.id === data.suspectId)
+    
+    interroSessions.set(sessionId, {
+      caseId: data.caseId,
+      suspect,
+      messages: [],
       stressLevel: 10
+    })
+    
+    return {
+      sessionId,
+      initialMessage: suspect ? 
+        ` "${suspect.name} duduk di hadapan Anda dengan tenang. "Ada apa? Saya tidak ada hubungannya dengan kasus ini."` :
+        ' Tersangka duduk di hadapan Anda.'
     }
   },
 
   // Interrogation - send message
-  sendMsg: async ({ sessionId, message }) => {
-    const prompt = `Jawab pertanyaan polisi ini dengan natural. Kalau ditekan tentang crimes, tetap tenang tapi menunjukkan kegelisahan ringan.`
+  sendMsg: async (data) => {
+    const session = interroSessions.get(data.sessionId)
+    if (!session) {
+      return { response: 'Session not found', stressLevel: 0, behaviorFlags: [] }
+    }
     
-    const response = await callGroq(message, prompt)
+    const prompt = `Kasus: ${session.caseId}
+Tersangka: ${session.suspect?.name || 'Unknown'}
+Profil: ${session.suspect?.personality || 'Normal'}
+Motif: ${session.suspect?.motive || 'Tidak ada'}
+Tanya: ${data.message}
+
+Anda adalah tersangka yang diinterogasi. Jawab secara natural, kadang defensif, kadang jujur. Tingkat stress: ${session.stressLevel}%`
+    
+    const response = await callGroq(prompt, 'You are a suspect being interrogated. Respond naturally in Indonesian.')
+    
+    // Update stress level
+    session.stressLevel = Math.min(100, session.stressLevel + Math.random() * 15)
+    session.messages.push({ role: 'user', content: data.message })
+    session.messages.push({ role: 'assistant', content: response })
+    
+    // Detect behavior flags
+    const flags = []
+    if (response.includes('?') || response.includes('mengapa')) flags.push({ type: 'DEFENSIVE', color: '#f59e0b' })
+    if (response.length > 200) flags.push({ type: 'TALKATIVE', color: '#3b82f6' })
+    if (response.includes('tidak tahu') || response.includes('不清楚')) flags.push({ type: 'EVASIVE', color: '#ef4444' })
     
     return {
       response,
-      stressLevel: Math.floor(Math.random() * 40) + 20,
-      behaviorFlags: [
-        { type: 'EYE_CONTACT', color: '#f59e0b' },
-        { type: 'HESITATION', color: '#ef4444' }
-      ]
+      stressLevel: Math.round(session.stressLevel),
+      behaviorFlags: flags
     }
   },
 
-  // Mind Reader - AI analysis
-  mindReader: async ({ theory, caseId }) => {
-    const caseData = await loadCase(caseId)
-    const caseInfo = caseData.case
+  // Mind Reader - analyze theory
+  mindReader: async (data) => {
+    const prompt = `Analisis teori investigasi ini:
+${data.theory}
+
+Berikan analisis mendalam tentang kekuatan dan kelemahan teori ini. Identifikasi:
+1. Kelemahan logis
+2. Bukti yang mendukung
+3. Bias yang mungkin terjadi
+4. Saran investigasi lanjutan
+
+Respons dalam format JSON dengan: analysis (string), score (number 0-100)`
     
-    const prompt = `Analisis teori investigasi ini untuk kasus "${caseInfo?.title}":
-
-Teori: ${theory}
-
-Berikan analisis dalam format JSON:
-{
-  "analysis": "analisis detail tentang kekuatan/kelemahan teori",
-  "strengths": ["poin kuat teori"],
-  "weaknesses": ["kelemahan teori"],
-  "recommendations": ["saran investigasi lanjutan"]
-}`
-
-    const result = await callGroq(prompt, 'Anda adalah AI cognitive analysis system.')
+    const result = await callGroq(prompt, 'You are NEXUS cognitive analysis AI.')
     
-    try {
-      const parsed = JSON.parse(result)
-      return { analysis: parsed.analysis || result }
-    } catch {
-      return { analysis: result }
+    return {
+      analysis: result,
+      score: Math.floor(Math.random() * 40) + 60 // Mock score
     }
   },
 
   // Academy - get modules
-  getModules: () => Promise.resolve({ modules }),
-
-  // Academy - get lesson
-  getLesson: async ({ moduleId }) => {
-    const lessonData = lessons[moduleId] || lessons.obs
-    return { lesson: lessonData }
+  getModules: async () => {
+    return { modules: MODULES }
   },
 
-  // Academy - evaluate answer
-  evalAnswer: async ({ moduleId, answer }) => {
-    const lessonData = lessons[moduleId] || lessons.obs
-    const question = lessonData.caseExample?.question || ''
+  // Academy - get lesson
+  getLesson: async (data) => {
+    const mod = MODULES.find(m => m.id === data.moduleId)
     
-    const prompt = `Evaluasi jawaban student untuk pertanyaan: "${question}"
-    
-Jawaban student: ${answer}
-    
-Beri evaluasi dalam format JSON:
-{
-  "isCorrect": boolean,
-  "score": number (0-100),
-  "feedback": "feedback untuk student",
-  "improvement": "saran perbaikan jika perlu",
-  "xpEarned": number
-}`
+    const prompt = `Buat materi pembelajaran untuk modul: ${mod?.title || 'Detective'}
+Level: ${mod?.level || 1}
 
-    const result = await callGroq(prompt, 'Anda adalah AI tutor untuk training detektif.')
+Buat dalam format JSON dengan:
+- lessonTitle: string
+- objective: string  
+- theory: string (materi teori)
+- keyPoints: array of strings
+- caseExample: object dengan scenario, question, options`
     
+    const result = await callGroq(prompt, 'You are NEXUS educational AI. Create lesson content in Indonesian.')
+    
+    // Parse or use default
+    let lesson
     try {
-      const parsed = JSON.parse(result)
-      return { evaluation: parsed }
+      lesson = JSON.parse(result)
     } catch {
-      return {
-        evaluation: {
-          isCorrect: answer.length > 50,
-          score: Math.min(100, answer.length * 2),
-          feedback: 'Terima kasih atas jawaban Anda. Terus belajar!',
-          xpEarned: 50
+      lesson = {
+        lessonTitle: mod?.title || 'Pelajaran Detektif',
+        objective: 'Memahami dasar investigasi',
+        theory: 'Investigasi crime memerlukan analisis sistematis...',
+        keyPoints: ['Amati bukti dengan teliti', 'Catat semua detail', 'Verifikasi informasi'],
+        caseExample: {
+          scenario: 'Di TKP ditemukan pisau dengan sidik jari',
+          question: 'Apa langkah pertama yang harus dilakukan?',
+          options: ['Mengambil pisau langsung', 'Mendokumentasikan TKP dulu', 'Menyisir area sekitar', 'Manggil forensik']
         }
       }
     }
+    
+    return { lesson }
+  },
+
+  // Academy - evaluate answer
+  evalAnswer: async (data) => {
+    const prompt = `Soal: ${data.question}
+Jawaban user: ${data.answer}
+
+Evaluasi jawaban ini dan berikan feedback. 
+Format JSON: isCorrect (boolean), score (0-100), feedback (string), improvement (string), xpEarned (number)`
+    
+    const result = await callGroq(prompt, 'You are NEXUS educational AI.')
+    
+    let evalResult
+    try {
+      evalResult = JSON.parse(result)
+    } catch {
+      evalResult = {
+        isCorrect: true,
+        score: 75,
+        feedback: 'Jawaban cukup baik!',
+        improvement: 'Perhatikan detail lebih lanjut',
+        xpEarned: 50
+      }
+    }
+    
+    return { evaluation: evalResult }
   },
 
   // Cognitive report
   getCogReport: async (playerId) => {
-    const prompt = `Buat laporan kognitif untuk detektif dengan profil:
-- Observasi: 65%
-- Deduksi Logis: 70%
-- Ketahanan Bias: 55%
-- Pengenalan Pola: 60%
+    const prompt = `Buat laporan kognitif untuk detektif berdasarkan profil:
+- Observasi: 50%
+- Deduksi Logis: 50%
+- Ketahanan Bias: 50%
+- Pengenalan Pola: 50%
 
-Buat laporan menarik dalam format naratif tentang kekuatan dan weakness cognitive mereka.`
-
-    const narrative = await callGroq(prompt, 'Anda adalah AI cognitive analyst.')
+Berikan narasi analisis dalam Bahasa Indonesia yang menarik.`
+    
+    const result = await callGroq(prompt, 'You are NEXUS cognitive analysis AI.')
     
     return {
       report: {
-        narrative,
-        scores: {
-          observasi: 65,
-          deduksiLogis: 70,
-          ketahananBias: 55,
-          pengenalanPola: 60
-        }
+        narrative: result,
+        observasi: 50,
+        deduksiLogis: 50,
+        ketahananBias: 50,
+        pengenalanPola: 50
       }
     }
   },
 
-  // Omega mode - generate case
-  omegaNext: async ({ playerId }) => {
-    const prompt = `Buat deskripsi kasus kriminal acak yang menarik dalam format JSON:
-
+  // Omega - generate new case
+  omegaNext: async (data) => {
+    const prompt = `Buat kasus investigasi acak dengan format JSON:
 {
-  "title": "judul kasus",
-  "description": "deskripsi 2-3 kalimat",
-  "difficulty": "MAHIR",
-  "omegaLevel": 5,
-  "pointReward": 500
+  "id": "omega_1",
+  "title": "string",
+  "type": "pembLOBALS|kejahatan_finansial|orang_hilang|konspirasi",
+  "difficulty": "OMEGA",
+  "description": "string",
+  "victim": {"name": "string", "age": number, "occupation": "string"},
+  "suspects": [{"id": "s1", "name": "string", "occupation": "string", "lieScore": number, "personality": "string", "motive": "string", "alibi": "string", "psychProfile": "string", "isGuilty": boolean}],
+  "evidence": [{"id": "e1", "name": "string", "description": "string", "isKeyEvidence": boolean, "isFake": boolean, "forensicAnalysis": "string"}],
+  "timeline": ["string"],
+  "pointReward": number,
+  "omegaLevel": number
 }`
-
-    const result = await callGroq(prompt, 'Anda adalah AI case generator.')
     
+    const result = await callGroq(prompt, 'You are NEXUS Omega case generator.')
+    
+    let caseData
     try {
-      const parsed = JSON.parse(result)
-      return { case: parsed }
+      caseData = JSON.parse(result)
     } catch {
-      return {
-        case: {
-          title: 'Kasus Omega Baru',
-          description: 'Sebuah kasus kompleks menunggu investigasi Anda...',
-          difficulty: 'OMEGA',
-          omegaLevel: Math.floor(Math.random() * 5) + 5,
-          pointReward: 500
-        }
+      caseData = {
+        id: 'omega_1',
+        title: 'Kasus Omega: Misteri Mansion',
+        type: 'pembunuhan',
+        difficulty: 'OMEGA',
+        description: 'Sebuah mansion tua menjadi tempat kejadian misterius...',
+        victim: { name: 'Lord Sterling', age: 65, occupation: 'CEO' },
+        suspects: [
+          { id: 's1', name: 'Pembantu', occupation: 'Pegawai', lieScore: 55, personality: 'Humble', motive: 'Uang', alibi: 'Di dapur', psychProfile: 'Loyal', isGuilty: false },
+          { id: 's2', name: 'Pewaris', occupation: 'Wiraswasta', lieScore: 80, personality: 'Ambitious', motive: 'Warisan', alibi: 'Di kamar', psychProfile: 'Narcissistic', isGuilty: true },
+        ],
+        evidence: [
+          { id: 'e1', name: 'Surat Wasiat', description: 'Dokumen warisan', isKeyEvidence: true, isFake: false, forensicAnalysis: 'Surat asli dengan tanda tangan valid' },
+          { id: 'e2', name: 'Racun', description: 'Sisa cairan mencurigakan', isKeyEvidence: true, isFake: false, forensicAnalysis: 'Mengandung sianida' },
+        ],
+        timeline: ['Jam 18:00 - Makan malam', 'Jam 20:00 - Lord Sterling merasa sakit', 'Jam 22:00 - Ditemukan tewas'],
+        pointReward: 1000,
+        omegaLevel: 1
       }
     }
+    
+    return { case: caseData }
   },
 
-  // Network - register (local storage simulation)
-  registerNet: (data) => Promise.resolve({ success: true }),
+  // Network - register
+  registerNet: async (data) => {
+    return { success: true, message: 'Registered' }
+  },
 
   // Network - leaderboard
-  getLeaderboard: (sort = 'points', limit = 50) => Promise.resolve({ 
-    leaderboard: leaderboard.slice(0, limit),
-    stats: { totalPlayers: 156, activeLast24h: 42 }
-  }),
+  getLeaderboard: async (sort = 'points', limit = 50) => {
+    return {
+      leaderboard: MOCK_LEADERBOARD.slice(0, limit),
+      stats: {
+        totalPlayers: MOCK_LEADERBOARD.length,
+        activeLast24h: Math.floor(Math.random() * 10) + 1
+      }
+    }
+  },
 
   // Network - daily case
-  getDailyCase: () => {
-    const daily = {
-      id: 'daily',
-      title: 'Tantangan Harian: Ketek Sang Ahli',
-      description: 'Setiap hari, pecahkan kasus khusus untuk bonus XP!',
-      difficulty: 'MAHIR',
-      pointReward: 200
-    }
-    return Promise.resolve({ case: daily })
-  }
+  getDailyCase: async () => {
+    const cases = await loadCases()
+    const daily = cases[Math.floor(Math.random() * cases.length)] || cases[0]
+    return { case: daily }
+  },
 }
 
