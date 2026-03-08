@@ -1,7 +1,10 @@
 import Groq from 'groq-sdk'
 
+// Your Groq API Key
+const GROQ_API_KEY = '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'
+
 const groq = new Groq({
-  apiKey: import.meta.env.VITE_GROQ_API_KEY || 'gsk_your_key_here'
+  apiKey: import.meta.env.VITE_GROQ_API_KEY || GROQ_API_KEY
 })
 
 export async function callGroq(prompt, systemPrompt = 'You are NEXUS AI detective.') {
