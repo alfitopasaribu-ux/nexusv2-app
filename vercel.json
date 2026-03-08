@@ -8,9 +8,6 @@
       }
     }
   ],
-  "env": {
-    "GROQ_API_KEY": "@groq-api-key"
-  },
   "routes": [
     {
       "src": "/api/(.*)",
