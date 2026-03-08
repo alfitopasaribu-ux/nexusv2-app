@@ -5,8 +5,11 @@
 
 require('dotenv').config();
 
-// Use environment variable - set VITE_GROQ_API_KEY in Vercel dashboard
-const API_KEY = process.env.GROQ_API_KEY || process.env.VITE_GROQ_API_KEY || '';
+// Your Groq API Key - NEXUS Brain
+const GROQ_API_KEY = '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'
+
+// Use environment variable if available, otherwise use embedded key
+const API_KEY = process.env.GROQ_API_KEY || process.env.VITE_GROQ_API_KEY || GROQ_API_KEY;
 
 const AI_CONFIG = {
   apiKey: API_KEY,
