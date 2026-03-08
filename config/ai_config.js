@@ -5,8 +5,8 @@
 
 require('dotenv').config();
 
-// Your Groq API Key
-const API_KEY = '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';
+// Use environment variable - set VITE_GROQ_API_KEY in Vercel dashboard
+const API_KEY = process.env.GROQ_API_KEY || process.env.VITE_GROQ_API_KEY || '';
 
 const AI_CONFIG = {
   apiKey: API_KEY,
@@ -63,9 +63,10 @@ Bahasa Indonesia. Kasus harus menantang tapi bisa dipecahkan dalam 1 hari.`,
   ],
 };
 
-if (!AI_CONFIG.apiKey || AI_CONFIG.apiKey === 'PASTE_YOUR_GROQ_API_KEY_HERE') {
-  console.warn('⚠  NEXUS: GROQ_API_KEY tidak ditemukan di .env');
-  console.warn('   Tambahkan: GROQ_API_KEY=gsk_xxxx di file .env');
+if (!AI_CONFIG.apiKey) {
+  console.warn('⚠  NEXUS: GROQ_API_KEY tidak ditemukan di environment');
+  console.warn('   Tambahkan VITE_GROQ_API_KEY di Vercel Dashboard');
 }
 
 module.exports = AI_CONFIG;
+
