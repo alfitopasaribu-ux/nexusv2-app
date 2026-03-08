@@ -3,19 +3,26 @@
 
 import Groq from 'groq-sdk'
 
+// =====================================================
+// API KEY - Langsung taruh di sini untuk sementara
+// Nanti kalau sudah jalan, pake Environment Variable
+// =====================================================
+const HARDCODED_API_KEY = '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'
+
 // Get API key - cek environment variable dulu
 const getApiKey = () => {
-  // Dari environment variable (Vite/Vercel)
+  // Coba dari environment variable (Vite/Vercel)
   const envKey = import.meta.env.VITE_GROQ_API_KEY
   
   // Validasi: harus mulai dengan "gsk_" dan panjang > 20
   if (envKey && typeof envKey === 'string' && envKey.startsWith('gsk_') && envKey.length > 20) {
-    console.log('[Groq] API Key found:', envKey.substring(0, 10) + '...')
+    console.log('[Groq] Using ENV API Key')
     return envKey
   }
   
-  console.warn('[Groq] No valid API key found. Set VITE_GROQ_API_KEY in Vercel.')
-  return null
+  // Fallback: pake hardcoded key
+  console.log('[Groq] Using HARDCODED API Key')
+  return HARDCODED_API_KEY
 }
 
 // Initialize Groq client - singleton
@@ -26,14 +33,14 @@ function initGroq() {
   
   const apiKey = getApiKey()
   if (!apiKey) {
-    console.error('[Groq] Failed to initialize - no API key')
+    console.error('[Groq] No API key available!')
     return null
   }
   
   try {
     groqClient = new Groq({
       apiKey: apiKey,
-      dangerouslyAllowBrowser: true // Diperlukan untuk client-side
+      dangerouslyAllowBrowser: true
     })
     console.log('[Groq] Client initialized successfully')
   } catch (error) {
@@ -51,7 +58,7 @@ export async function callGroq(prompt, systemPrompt = 'You are NEXUS AI detectiv
   const client = initGroq()
   
   if (!client) {
-    const errorMsg = 'Error: API key tidak valid atau belum diset. Silakan set VITE_GROQ_API_KEY di Vercel Dashboard → Settings → Environment Variables.'
+    const errorMsg = 'Error: Gagal inisialisasi Groq client'
     console.error('[Groq]', errorMsg)
     return errorMsg
   }
@@ -86,4 +93,3 @@ export async function callGroq(prompt, systemPrompt = 'You are NEXUS AI detectiv
 export function isAiReady() {
   return getApiKey() !== null
 }
-
