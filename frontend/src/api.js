@@ -1,5 +1,5 @@
 // NEXUS_v3 API - Client-side with local data & Groq AI
-import { callGroq } from './api/groq.js'
+import { callGroq, isAiReady } from './api/groq.js'
 
 // Local case data - load from public/cases
 const CASES = []
@@ -64,8 +64,7 @@ const interroSessions = new Map()
 export const api = {
   // Health check - always return AI ready if Groq key exists
   health: async () => {
-    const hasKey = import.meta.env.VITE_GROQ_API_KEY && 
-                   !import.meta.env.VITE_GROQ_API_KEY.includes('your_key')
+    const hasKey = isAiReady()
     return { 
       status: 'ok', 
       aiReady: hasKey,
