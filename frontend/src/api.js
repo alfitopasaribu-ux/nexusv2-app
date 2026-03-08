@@ -151,31 +151,78 @@ export const api = {
     return { case: found }
   },
 
-  // Solve case - use Groq AI
+  // Solve case - use Groq AI for proper evaluation
   solveCase: async (caseId, data) => {
     const cases = await loadCases()
     const caseData = cases.find(c => c.id === caseId || c.id === String(caseId).padStart(2, '0'))
     
+    // Find the actual culprit from case data
+    const culprit = caseData?.suspects?.find(s => s.isGuilty === true) || caseData?.suspects?.[0]
+    const allSuspects = caseData?.suspects?.map(s => `${s.name} (${s.occupation})`).join(', ') || 'Tersangka A, Tersangka B'
+    
     const prompt = `Kasus: ${caseData?.title || caseId}
-Theori: ${data.theory}
-Tersangka yang dipilih: ${data.suspectId}
+Deskripsi: ${caseData?.description || ''}
+Daftar Semua Tersangka: ${allSuspects}
+Tersangka yang dipilih pengguna: ${data.suspectId}
+Teori pengguna: ${data.theory}
 
-Analisis apakah teorie ini benar atau salah. Jelaskan mengapa.`
+你是 NEXUS AI Detective. 分析用户的答案是否正确。
+
+你必须返回 JSON 格式的答案（不带代码块）：
+{
+  "correct": true 或 false,
+  "culpritName": "Nama pelaku sebenarnya",
+  "explanation": "详细的解释说明为什么对或错",
+  "pointReward": 分数,
+  "analysis": "对用户理论的详细分析"
+}
+
+重要：
+- 如果用户选择的嫌疑人是真正的罪犯（isGuilty=true），则 correct = true
+- 如果正确，pointReward = 案件奖励积分（通常是 100-500）
+- 如果错误，pointReward = 0
+- 必须用印尼语回复`
     
-    const result = await callGroq(prompt, 'You are NEXUS AI detective. Analyze the solution and determine if it is correct. Return JSON with: correct (boolean), culpritName (string), explanation (string), pointReward (number).')
+    const result = await callGroq(prompt, '你是 NEXUS AI Detective. 始终返回有效的 JSON 格式。')
     
-    // Parse the result - try to extract correct answer
-    const isCorrect = result.toLowerCase().includes('"correct":true') || 
-                      result.toLowerCase().includes('benar') ||
-                      result.toLowerCase().includes('correct')
+    // Parse the AI response
+    let parsedResult = {
+      correct: false,
+      culpritName: culprit?.name || 'Tersangka A',
+      explanation: result,
+      pointReward: 0
+    }
+    
+    try {
+      // Try to extract JSON from response
+      const jsonMatch = result.match(/\{[\s\S]*\}/)
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0])
+        parsedResult = {
+          correct: parsed.correct === true,
+          culpritName: parsed.culpritName || culprit?.name || 'Tersangka A',
+          explanation: parsed.explanation || result,
+          pointReward: parsed.correct === true ? (caseData?.pointReward || 100) : 0
+        }
+      }
+    } catch (e) {
+      // If JSON parsing fails, determine correctness from text
+      const lowerResult = result.toLowerCase()
+      const isCorrectAnswer = data.suspectId === culprit?.id || 
+                              lowerResult.includes('"correct":true') ||
+                              lowerResult.includes('"correct": true') ||
+                              lowerResult.includes('benar') && !lowerResult.includes('salah')
+      
+      parsedResult = {
+        correct: isCorrectAnswer,
+        culpritName: culprit?.name || 'Tersangka A',
+        explanation: result,
+        pointReward: isCorrectAnswer ? (caseData?.pointReward || 100) : 0
+      }
+    }
     
     return {
-      result: {
-        correct: isCorrect,
-        culpritName: caseData?.suspects?.[0]?.name || 'Tersangka A',
-        explanation: result,
-        pointReward: isCorrect ? (caseData?.pointReward || 100) : 0
-      }
+      result: parsedResult
     }
   },
 
