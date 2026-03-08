@@ -1,3 +1,4 @@
+
 // NEXUS_v3 API - Client-side with local data & Groq AI
 import { callGroq, isAiReady } from './api/groq.js'
 
@@ -42,13 +43,56 @@ function getFallbackCases() {
   ]
 }
 
-// Mock data for modules
+// Mock data for modules - each with unique study cases
 const MODULES = [
-  { id: 'obs', icon: '🔍', title: 'Observasi Forensic', desc: 'Latih kemampuan mengamati detail', level: 1 },
-  { id: 'ded', icon: '🧠', title: 'Deduksi Logis', desc: 'Belajar berpikir sistematis', level: 2 },
-  { id: 'bias', icon: '⚖️', title: 'Anti-Bias', desc: 'Kurangi kesalahan kognitif', level: 3 },
-  { id: 'pola', icon: '📊', title: 'Pengenalan Pola', desc: 'Identifikasi pola tersembunyi', level: 4 },
-  { id: 'inter', icon: '💬', title: 'Interogasi', desc: 'Teknik mendapatkan informasi', level: 5 },
+  { 
+    id: 'obs', 
+    icon: '🔍', 
+    title: 'Observasi Forensic', 
+    desc: 'Latih kemampuan mengamati detail yang sering terlewat', 
+    level: 1,
+    topic: 'forensik'
+  },
+  { 
+    id: 'ded', 
+    icon: '🧠', 
+    title: 'Deduksi Logis', 
+    desc: 'Belajar berpikir sistematis dan menemukan kebenaran', 
+    level: 2,
+    topic: 'deduksi'
+  },
+  { 
+    id: 'bias', 
+    icon: '⚖️', 
+    title: 'Anti-Bias Kognitif', 
+    desc: 'Kurangi kesalahan berpikir yang tidak sadar', 
+    level: 3,
+    topic: 'psikologi'
+  },
+  { 
+    id: 'pola', 
+    icon: '📊', 
+    title: 'Pengenalan Pola', 
+    desc: 'Identifikasi pola tersembunyi dalam kejahatan', 
+    level: 4,
+    topic: 'analisis'
+  },
+  { 
+    id: 'inter', 
+    icon: '💬', 
+    title: 'Teknik Interogasi', 
+    desc: 'Strategi mendapatkan informasi dari saksi', 
+    level: 5,
+    topic: 'interogasi'
+  },
+  { 
+    id: 'strat', 
+    icon: '♟️', 
+    title: 'Strategi Investigasi', 
+    desc: 'Rencanakan investigasi seperti grandmaster catur', 
+    level: 6,
+    topic: 'strategi'
+  },
 ]
 
 // Mock leaderboard
@@ -197,19 +241,32 @@ Anda adalah tersangka yang diinterogasi. Jawab secara natural, kadang defensif, 
     const prompt = `Analisis teori investigasi ini:
 ${data.theory}
 
-Berikan analisis mendalam tentang kekuatan dan kelemahan teori ini. Identifikasi:
-1. Kelemahan logis
-2. Bukti yang mendukung
-3. Bias yang mungkin terjadi
+Berikan analisis mendalam tentang kekuatan dan kelemahan teori ini dalam Bahasa Indonesia yang NATURAL dan MUDAH DIMENGERTI. Jangan gunakan format JSON atau kode apapun.Tulis seperti seorang detektif senior yang memberi nasihat.
+
+Poin-poin yang harus dibahas:
+1. Kelemahan logis dalam teori ini
+2. Bukti yang mendukung teori
+3. Bias yang mungkin terjadi pada pengamat
 4. Saran investigasi lanjutan
 
-Respons dalam format JSON dengan: analysis (string), score (number 0-100)`
+Tulis dengan gaya bahasa yang menarik, seperti cerita detektif.`
     
-    const result = await callGroq(prompt, 'You are NEXUS cognitive analysis AI.')
+    const result = await callGroq(prompt, 'You are a senior detective mentor. Give advice in natural Indonesian prose, no JSON or code.')
+    
+    // Clean up any remaining code blocks
+    const cleanResult = result
+      .replace(/```json\n?/g, '')
+      .replace(/```\n?/g, '')
+      .replace(/"([^"]+)":/g, '$1:')
+    
+    // Generate a reasonable score based on theory length and keywords
+    const theoryLength = data.theory?.length || 0
+    const hasKeywords = /bukti|motif|alibi|tersangka|pelaku/i.test(data.theory || '')
+    let score = Math.min(95, Math.max(30, Math.floor(theoryLength / 10) + (hasKeywords ? 20 : 0)))
     
     return {
-      analysis: result,
-      score: Math.floor(Math.random() * 40) + 60 // Mock score
+      analysis: cleanResult,
+      score: score
     }
   },
 
@@ -221,35 +278,123 @@ Respons dalam format JSON dengan: analysis (string), score (number 0-100)`
   // Academy - get lesson
   getLesson: async (data) => {
     const mod = MODULES.find(m => m.id === data.moduleId)
+    const lessonNum = data.lessonNumber || 1
     
-    const prompt = `Buat materi pembelajaran untuk modul: ${mod?.title || 'Detective'}
-Level: ${mod?.level || 1}
+    // Different study case topics for each module
+    const studyCaseTopics = {
+      obs: 'seorang pembersih jendela yang menemukan barang bukti tersembunyi di tempat tinggi',
+      ded: 'pembunuhan di perpustakaan dengan buku yang hilang',
+      bias: 'saksi yang yakin100% tapi ternyata salah identifikasi',
+      pola: 'pola kejadian aneh di sebuah kompleks perumahan',
+      inter: 'saksi yang sangat pendiam dan ketakutan',
+      strat: 'kompleks percetakan uang palsu dengan banyak pintu'
+    }
+    
+    const topic = studyCaseTopics[mod?.id] || 'kasus detektif umum'
+    const difficultyLevel = mod?.level || 1
+    
+    const prompt = `Buat materi pembelajaran DETAIL untuk modul: "${mod?.title || 'Detective'}"
+Topik studi kasus: ${topic}
+Level kesulitan: ${difficultyLevel}
 
-Buat dalam format JSON dengan:
-- lessonTitle: string
-- objective: string  
-- theory: string (materi teori)
-- keyPoints: array of strings
-- caseExample: object dengan scenario, question, options`
+Kamu adalah guru detektif berpengalaman. Buat materi dalam Bahasa Indonesia yang menarik dan NATURAL. 
+
+Materi harus berisi:
+1. lessonTitle: Judul pelajaran yang menarik (max 50 karakter)
+2. objective: Tujuan pembelajaran (max 100 karakter)
+3. theory: Teori panjang tentang topik ini (3-4 paragraf, sangat detail)
+4. keyPoints: 4-5 poin penting yang harus diingat
+5. caseExample: Contoh studi kasus nyata dengan:
+   - scenario: Cerita situasi kejadian (paragraf panjang)
+   - question: Pertanyaan untuk user
+   - options: 4 pilihan jawaban
+
+PENTING: Respons harus dalam JSON valid. Hapus semua backtick dan format kode.`
     
-    const result = await callGroq(prompt, 'You are NEXUS educational AI. Create lesson content in Indonesian.')
+    const result = await callGroq(prompt, 'You are NEXUS educational AI. Create detailed lesson content in Indonesian. Always respond in valid JSON format.')
     
-    // Parse or use default
+    // Parse or use detailed fallback
     let lesson
     try {
-      lesson = JSON.parse(result)
+      // Try to extract JSON from response
+      const jsonMatch = result.match(/\{[\s\S]*\}/)
+      if (jsonMatch) {
+        lesson = JSON.parse(jsonMatch[0])
+      } else {
+        throw new Error('No JSON found')
+      }
     } catch {
-      lesson = {
-        lessonTitle: mod?.title || 'Pelajaran Detektif',
-        objective: 'Memahami dasar investigasi',
-        theory: 'Investigasi crime memerlukan analisis sistematis...',
-        keyPoints: ['Amati bukti dengan teliti', 'Catat semua detail', 'Verifikasi informasi'],
-        caseExample: {
-          scenario: 'Di TKP ditemukan pisau dengan sidik jari',
-          question: 'Apa langkah pertama yang harus dilakukan?',
-          options: ['Mengambil pisau langsung', 'Mendokumentasikan TKP dulu', 'Menyisir area sekitar', 'Manggil forensik']
+      // Use detailed fallback based on module
+      const fallbacks = {
+        obs: {
+          lessonTitle: 'Seni Mengamati Jejak',
+          objective: 'Meningkatkan kemampuan observasi detail yang sering terlewat',
+          theory: 'Dalam investigasi forensic, kemampuan observasi adalah fondasi dari semua pekerjaan detektif. Seringkali, bukti paling penting tersembunyi di tempat yang paling tidak terduga. Seorang detektif harus melatih matanya untuk melihat apa yang orang lain lewatkan.\n\nDetail seperti bekas sepatu yang tidak rapih, noda cairan yang hampir tidak terlihat, atau tekstur lantai yang berbeda bisa menjadi kunci pengungkapan kasus. Teknik observation meliputi: systematic scanning, comparative analysis, dan contextual awareness.\n\nLatihlah diri untuk selalu bertanya: "Apa yang aneh di sini?" dan "Apa yang seharusnya ada tapi tidak ada?"',
+          keyPoints: ['Selalu lihat ke atas dan ke bawah', 'Perhatikan perubahan kecil', 'Gunakan semua indra', 'Dokumentasikan sebelum menyentuh', 'Pikir seperti pelaku'],
+          caseExample: {
+            scenario: 'Di sebuah rumah tua, polisi menemukan tubuh Mr. Black di ruang kerja. Meja kerja berantakan, laci terbuka, dan ada pecahan kaca di lantai. Di sudut ruangan, ada jejak kaki basah yang keluar dari jendela. Namun, CCTV menunjukkan tidak ada yang masuk atau keluar. Di meja, ada secangkir kopi masih hangat.',
+            question: 'Apa detail yang paling mencurigakan dari TKP ini?',
+            options: ['Jejak kaki basah yang tidak masuk akal', 'Kopi masih hangat', 'CCTV yang tidak merekam', 'Meja yang berantakan', 'Pecahan kaca']
+          }
+        },
+        ded: {
+          lessonTitle: 'Menalar Seperti Sherlock',
+          objective: 'Mengembangkan kemampuan deduksi logis dari fakta',
+          theory: 'Deduksi adalah proses menarik kesimpulan dari premis-premis yang diketahui. Dalam investigasi, kita mengumpulkan fakta, menganalisis hubungan antar fakta, dan menarik kesimpulan yang logis.\n\nMetode deduksi meliputi: elimination (meng排除 kemungkinan), abduction (penalaran ke penjelasan terbaik), dan induction (dari khusus ke umum). Seorang detektif harus menghindari confirmation bias dan selalu terbuka pada kemungkinan lain.\n\nLatih logika dengan banyak membaca, menyelesaikan puzzle, dan selalu mempertanyakan asumsi.',
+          keyPoints: ['Kumpulkan fakta dulu', 'Hindari asumsi', 'Gunakan metode eliminasi', 'Pikir di luar kotak', 'Verifikasi kesimpulan'],
+          caseExample: {
+            scenario: 'Diamond senilai jutaan rupiah dicuri dari brankas hotel. Hanya 3 orang punya akses: manajer, security, dan tamu di kamar 501. Manajer punya alibi: meeting penuh dari jam 2-4. Security mengaku standby di lobi. Tamu kamar 501 check-out jam 3:30 dengan koper besar. CCTV lobby menunjukkan manajer dan security tidak bergerak dari posisi. Kamar 501 memiliki balkon yang terhubung ke kamar lain.',
+            question: 'Siapa pelaku paling mungkin berdasarkan deduksi?',
+            options: ['Manajer dengan dalih meeting', 'Security yang berbohong', 'Tamu kamar 501 via balkon', 'Orang dalam yang tidak terduga', 'Tim profesional outsider']
+          }
+        },
+        bias: {
+          lessonTitle: 'Mengalahkan Pikiran Kita',
+          objective: 'Mengenali dan mengatasi bias kognitif dalam investigasi',
+          theory: 'Otak manusia tidak sempurna. Kita punya banyak bias yang bisa menyesatkan investigasi. Confirmation bias membuat kita hanya melihat bukti yang mendukung teori kita. Anchor bias membuat kita terpaku pada informasi pertama.\n\nOther biases include: availability heuristic (mengangga based on easy recall), dan fundamental attribution error (menilai别人 berdasarkan disposisi, bukan situasi).\n\nUntuk menjadi detektif yang baik, kita harus sadar akan bias ini dan secara aktif melawannya. Selalu minta second opinion dan uji假设 dengan bukti.',
+          keyPoints: ['Sadari bahwa kamu bisa salah', 'Cari bukti yang membantah teori', 'Minta pendapat orang lain', 'Tidak terpaku pada first impression', 'Gunakan metode ilmiah'],
+          caseExample: {
+            scenario: 'Saksi A bilang melihat pria berkemeja biru di TKP jam 10 malam. Saksi B mendukung dengan bilang pria berkemeja biru memang sering lewat. Polisi langsung fokus pada pria berkemeja biru. Namun, setelah ditelusuri, tidak ada pria berkemeja biru yang terkait. Kasus mandek karena terlalu fokus pada deskripsi yang salah.',
+            question: 'Apa bias utama yang terjadi dalam kasus ini?',
+            options: ['Confirmation bias', 'Availability heuristic', 'Anchoring bias', 'Dunning-Kruger effect', 'Hindsight bias']
+          }
+        },
+        pola: {
+          lessonTitle: 'Melihat Pola di Balik Kekacauan',
+          objective: 'Mengidentifikasi pola tersembunyi dalam kejahatan',
+          theory: 'Kejahatan sering meninggalkan pola. Pembunuh berantai memiliki signature berupa metode yang konsisten. Penipu menggunakan teknik yang sama berulang kali. Dengan mengidentifikasi pola, kita bisa memprediksi langkah selanjutnya.\n\nTeknik pengenalan pola: timeline analysis (lihat urutan kejadian), geographic profiling (peta lokasi), behavioral analysis (pola perilaku), dan network mapping (jaringan kontak).\n\nGunakan spreadsheet atau tools untuk visualisasi pola. Seringkali, pola terlihat jelas saat divisualisasikan.',
+          keyPoints: ['Buat timeline kejadian', 'Petakan lokasi', 'Analisis perilaku pelaku', 'Bandingkan dengan kasus serupa', 'Gunakan teknologi visualisasi'],
+          caseExample: {
+            scenario: 'Dalam 3 bulan, terjadi 5 perampokan di mall berbeda. Semuanya di hari weekend, jam 8 malam, pelaku masuk melalui pintu darurat yang sama teknikbuka, selalu membawa tas ransel hitam, dan mengambil barang elektronik. Semua korban adalah wanita yang sendirian. Police menemukan DNA berbeda di TKP, menunjukkan pelaku adalah geng dengan 3-4 orang.',
+            question: 'Apa pola paling mencolok dari kasus ini?',
+            options: ['Waktu kejadian yang sama', 'Metode masuk yang identik', 'Target korban yang sama', 'Barang yang diambil sama', 'Semua jawaban benar']
+          }
+        },
+        inter: {
+          lessonTitle: 'Seni Berbicara',
+          objective: 'Menguasai teknik mendapatkan informasi dari saksi',
+          theory: 'Interogasi adalah seni, bukan science. Tujuan utama adalah membuat субъект nyaman untuk berbicara. Techniques: building rapport, menggunakan silence, open-ended questions, dan strategic confrontation.\n\nHindari: leading questions, intimidation yang berlebihan, dan creating adversarial dynamic. Bicaralah dengan bahasa korban/saksi untuk build trust.\n\nSelalu observe body language. Postur tertutup = tidak nyaman. Micro-expressions bisa menunjukkan kebohongan.',
+          keyPoints: ['Bangun rapport dulu', 'Gunakan pertanyaan terbuka', 'Manfaatkan diam', 'Observe body language', 'Tidak memaksa'],
+          caseExample: {
+            scenario: 'Saksi Mrs. Chen sangat ketakutan dan hanya menjawab dengan satu kata. Dia terus melihat ke pintu. Detektif mulai dengan topik netral: cuaca, anak-anak sekolah. Mrs. Chen perlahan relax. Detektif lalu bertanya tentang malam itu, tapi Mrs. Chen kembali tegang dan bilang "saya tidak tahu apapun" dengan suara bergetar.',
+            question: 'Apa strategi yang tepat untuk melanjutkan interogasi?',
+            options: ['Langsung tuduh dia menyembunyikan sesuatu', 'Tunda interogasi, pastikan keamanan dia dulu', 'Paksa dengan ancaman penjara', 'Tanya tentang apa yang dia lihat di pintu', 'Bilang kalau pelaku sudah diketahui']
+          }
+        },
+        strat: {
+          lessonTitle: 'Strategi Catur Investigasi',
+          objective: 'Merencanakan investigasi seperti permainan catur',
+          theory: 'Investigation adalah seperti bermain catur. Setiap langkah harus diperhitungkan - bagaimana akan affect langkah selanjutnya. Strategi yang baik membutuhkan: information gathering (mengumpulkan semua fakta), resource allocation (menggunakan tim dengan efisien), dan contingency planning (rencana cadangan).\n\nPrioritas: amankan TKP dulu, interview witnesses sebelum mereka lupa, dan cepat identifikasi suspects utama. Setiap keputusan harus based on evidence, bukan emosi.\n\nAlways think 3 steps ahead. Jika kita interview witness A, apa yang akan dilakukan suspect?',
+          keyPoints: ['Rencanakan sebelum bertindak', 'Prioritas keamanan TKP', 'Alokasikan sumber daya dengan bijaksana', 'Selalu punya rencana cadangan', 'Think ahead 3 langkah'],
+          caseExample: {
+            scenario: 'Kasus pembunuhan dengan 4 tersangka dan 10 saksi. Police punya hanya 2 detective dan budget terbatas untuk 1 minggu. Semua saksi akan pergi kota dalam 5 hari. Tersangka utama memiliki alibi yang harus diverifikasi.',
+            question: 'Apa langkah strategis pertama yang harus diambil?',
+            options: ['Interview semua saksi secepatnya', 'Fokus verifikasi alibi tersangka utama', 'Surveillance semua tersangka', 'Minta backup ke pimpinan', 'Analisis forensik dulu']
+          }
         }
       }
+      
+      lesson = fallbacks[mod?.id] || fallbacks.ded
     }
     
     return { lesson }
@@ -310,7 +455,7 @@ Berikan narasi analisis dalam Bahasa Indonesia yang menarik.`
 {
   "id": "omega_1",
   "title": "string",
-  "type": "pembLOBALS|kejahatan_finansial|orang_hilang|konspirasi",
+  "type": "pembglobals|kejahatan_finansial|orang_hilang|konspirasi",
   "difficulty": "OMEGA",
   "description": "string",
   "victim": {"name": "string", "age": number, "occupation": "string"},

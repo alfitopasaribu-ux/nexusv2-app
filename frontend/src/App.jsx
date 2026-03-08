@@ -1004,7 +1004,7 @@ function JaringanGlobal({nav,stats,playerId}){
 function ModeOmega({nav,stats,playerId}){
   const [omegaCase,setOmegaCase]=useState(null)
   const [loading,setLoading]=useState(false)
-  const unlocked=stats.solved>=50||stats.pts>=30000
+const unlocked=stats.solved>=35||stats.pts>=30000
 
   async function loadOmega(){
     setLoading(true)
@@ -1027,14 +1027,14 @@ function ModeOmega({nav,stats,playerId}){
         <div style={{fontSize:48,marginBottom:16}}>🔒</div>
         <div className="orb" style={{fontSize:16,color:'#ff6b00',marginBottom:9}}>TERKUNCI</div>
         <div style={{fontSize:14,color:'var(--m)',lineHeight:1.8,marginBottom:16}}>
-          Selesaikan <strong style={{color:'var(--c)'}}>50 kasus</strong> atau capai <strong style={{color:'var(--a)'}}>30.000 XP</strong> untuk membuka NEXUS OMEGA MODE.
+          Selesaikan <strong style={{color:'var(--c)'}}>35 kasus</strong> atau capai <strong style={{color:'var(--a)'}}>30.000 XP</strong> untuk membuka NEXUS OMEGA MODE.
         </div>
         <div style={{marginBottom:20}}>
           <div style={{display:'flex',justifyContent:'space-between',marginBottom:6}}>
             <span style={{fontSize:12,color:'var(--m)'}}>Kasus selesai</span>
-            <span className="mono" style={{fontSize:12,color:'var(--c)'}}>{stats.solved}/50</span>
+<span className="mono" style={{fontSize:12,color:'var(--c)'}}>{stats.solved}/35</span>
           </div>
-          <PBar v={stats.solved} max={50} color='var(--c)'/>
+<PBar v={stats.solved} max={35} color='var(--c)'/>
           <div style={{display:'flex',justifyContent:'space-between',marginTop:9,marginBottom:6}}>
             <span style={{fontSize:12,color:'var(--m)'}}>XP terkumpul</span>
             <span className="mono" style={{fontSize:12,color:'var(--a)'}}>{stats.pts}/30000</span>
