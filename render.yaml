@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: nexus-ai
+    env: node
+    region: singapore
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: GROQ_API_KEY
+        sync: false
+        # GROQ_API_KEY will be set in Render dashboard for security
+
