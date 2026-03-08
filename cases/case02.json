@@ -1,0 +1,123 @@
+{
+  "id": 2,
+  "title": "Warisan Berdarah",
+  "type": "pembunuhan",
+  "difficulty": "PEMULA",
+  "location": "rumah",
+  "description": "Hartawan berusia 75 tahun ditemukan tewas di villa mewahnya. Tiga anaknya hadir malam itu. Warisan senilai 500 miliar menjadi motif yang jelas — tapi siapa yang benar-benar melakukannya?",
+  "victim": {
+    "name": "Pak Surya Wibisono",
+    "age": 75,
+    "occupation": "Konglomerat Properti"
+  },
+  "timeline": [
+    "19:00 — Makan malam keluarga di ruang utama",
+    "20:30 — Pak Surya masuk perpustakaan sendirian",
+    "21:00 — Suara benda jatuh keras",
+    "21:05 — Anton menemukan jasad tersungkur di lantai",
+    "21:10 — Seluruh keluarga berkumpul di perpustakaan"
+  ],
+  "suspects": [
+    {
+      "id": "s1",
+      "name": "Anton Surya",
+      "age": 45,
+      "occupation": "Anak Pertama — Pengusaha",
+      "motive": "Dicoret dari wasiat seminggu sebelumnya",
+      "alibi": "Mengklaim sedang di kamar mandi",
+      "personality": "gugup",
+      "psychProfile": "Defensif dan cepat emosi — reaksi wajar orang yang baru dicoret warisan, bukan indikator bersalah",
+      "isGuilty": false
+    },
+    {
+      "id": "s2",
+      "name": "Maya Surya",
+      "age": 42,
+      "occupation": "Anak Kedua — Eksekutif",
+      "motive": "Bisnis propertinya hampir bangkrut, butuh dana segera",
+      "alibi": "Mengklaim menelepon klien di taman",
+      "personality": "manipulatif",
+      "psychProfile": "Terlalu kooperatif dan membantu penyelidikan — classic guilty party behavior",
+      "isGuilty": true
+    },
+    {
+      "id": "s3",
+      "name": "Rio Surya",
+      "age": 38,
+      "occupation": "Anak Bungsu — Seniman",
+      "motive": "Ingin bebas dari kendali ketat ayahnya",
+      "alibi": "Bermain piano di ruang musik",
+      "personality": "percaya_diri",
+      "psychProfile": "Artistik dan santai, facade tidak peduli menutupi rasa bersalah berbeda",
+      "isGuilty": false
+    }
+  ],
+  "evidence": [
+    {
+      "id": "e1",
+      "name": "Botol Obat Jantung",
+      "description": "Obat jantung Pak Surya — kapsul dimodifikasi dengan dosis 4x normal",
+      "forensicAnalysis": "Seseorang mengganti isi kapsul sebelum malam kejadian. Diperlukan pengetahuan farmasi dan akses ke kamar tidur",
+      "isKeyEvidence": true,
+      "isFake": false,
+      "category": "forensik"
+    },
+    {
+      "id": "e2",
+      "name": "Dua Gelas Anggur",
+      "description": "Satu milik korban, satu lagi sidik jarinya sengaja dihapus",
+      "forensicAnalysis": "DNA masih dalam proses. Gelas kedua dibersihkan sangat hati-hati — memerlukan waktu dan ketenangan",
+      "isKeyEvidence": true,
+      "isFake": false,
+      "category": "fisik"
+    },
+    {
+      "id": "e3",
+      "name": "Surat Wasiat Baru",
+      "description": "Wasiat yang belum ditandatangani menguntungkan Maya 100%",
+      "forensicAnalysis": "Dicetak 3 hari lalu dari printer di kamar kerja yang diakses terakhir oleh Maya",
+      "isKeyEvidence": true,
+      "isFake": false,
+      "category": "digital"
+    },
+    {
+      "id": "e4",
+      "name": "Buku Harian Pak Surya",
+      "description": "Keluhan tentang seluruh ketiga anaknya",
+      "forensicAnalysis": "BUKTI PALSU — Analisis tinta menunjukkan tulisan dibuat pasca kematian. Ditanam untuk mengalihkan kecurigaan",
+      "isKeyEvidence": false,
+      "isFake": true,
+      "category": "fisik"
+    }
+  ],
+  "witnesses": [
+    {
+      "name": "Pembantu Villa",
+      "statement": "Nona Maya berulang kali masuk ke dapur malam itu, bilang mengambil minuman untuk Bapak"
+    },
+    {
+      "name": "Tukang Kebun",
+      "statement": "Saya melihat Nona Maya berdiri di luar jendela perpustakaan sekitar jam 20:45"
+    }
+  ],
+  "hiddenContradictions": [
+    "Tidak ada rekaman telepon dari Maya selama ia mengklaim menelepon",
+    "Bunyi piano Rio tidak terdengar satu pun oleh saksi lain",
+    "Maya memiliki latar belakang farmasi sebelum menjadi eksekutif"
+  ],
+  "cognitiveTraps": [
+    "Anton paling defensif sehingga terlihat paling mencurigakan — tapi reaksinya wajar",
+    "Wasiat yang belum ditandatangani bisa bukan motif, tapi bukti persiapan"
+  ],
+  "solution": {
+    "culpritId": "s2",
+    "method": "Maya mengganti isi kapsul obat jantung ayahnya dengan dosis mematikan, kemudian menghapus jejak dari gelas anggur yang ia gunakan saat bersama ayahnya sebelum kejadian",
+    "explanation": "Maya yang paling terdesak secara finansial. Bisnisnya akan bangkrut bulan depan. Ia memodifikasi obat jantung menggunakan pengetahuan farmasinya, menunggu ayahnya minum saat malam, membersihkan gelas anggur, menciptakan alibi telepon palsu, dan mencetak wasiat baru. Kesalahannya: dia terlalu kooperatif dengan penyelidikan.",
+    "keyEvidence": [
+      "e1",
+      "e2",
+      "e3"
+    ]
+  },
+  "pointReward": 300
+}
