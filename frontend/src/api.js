@@ -1,59 +1,165 @@
-// ============================================================
-// NEXUS v3.0 — GROQ AI Client (Vercel Compatible)
-// ============================================================
+// NEXUS v3.0 - Frontend API Configuration
+// Menggunakan Groq API untuk AI features
 
-export const GROQ_CONFIG = {
-  API_KEY: import.meta.env.VITE_GROQ_API_KEY || "",
-  MODEL: "llama-3.3-70b-versatile",
-  BASE_URL: "https://api.groq.com/openai/v1/chat/completions",
+// Deteksi environment
+const isVercel = import.meta.env.VERCEL === '1';
+const API_BASE = isVercel 
+  ? "/api"  // Vercel serverless
+  : "";     // Local development
+
+// Helper untuk memanggil Groq API
+async function callGroq(messages, systemPrompt, options = {}) {
+  const defaultOptions = {
+    temperature: 0.8,
+    max_tokens: 900,
+    model: "llama-3.3-70b-versatile"
+  };
+  
+  const config = { ...defaultOptions, ...options };
+  
+  const res = await fetch(`${API_BASE}/ai/call`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      messages: [{ role: "system", content: systemPrompt }, ...messages],
+      ...config
+    }),
+  });
+  
+  if (!res.ok) {
+    throw new Error(`API Error: ${res.status}`);
+  }
+  
+  const data = await res.json();
+  return data.response;
 }
 
-function generateFallback(messages, sp) {
-  if (sp.includes("tersangka") || sp.includes("karakter")) {
-    const r = [
-      "Saya tidak ada hubungannya dengan ini. Anda membuang waktu.",
-      "Pertanyaan menarik... tapi saya tidak perlu menjawab.",
-      "Coba buktikan dulu sebelum menuduh saya.",
-      "Saya sudah bilang — saya tidak di sana malam itu.",
-      "Hubungi pengacara saya jika ingin bicara lebih lanjut.",
-    ]
-    return r[Math.floor(Math.random() * r.length)]
-  }
-  if (sp.includes("psikolog") || sp.includes("profil"))
-    return "Subjek menunjukkan pola perilaku defensive yang kuat. Terdapat inkonsistensi antara narasi verbal dan indikator stres. Kemungkinan menyembunyikan informasi: 73%. Rekomendasikan tekanan pada titik temporal kejadian."
-  if (sp.includes("mind") || sp.includes("teori"))
-    return "Teori Anda memiliki 3 celah kritis: (1) Anda mengabaikan window waktu 15 menit yang tidak bisa dijelaskan, (2) Motif yang Anda bangun bergantung pada asumsi yang belum terverifikasi, (3) Ada satu bukti yang secara aktif bertentangan dengan kesimpulan Anda. Kembali ke kronologi."
-  if (sp.includes("forensik") || sp.includes("lab"))
-    return "ANALISIS FORENSIK: Pola luka menunjukkan serangan dari belakang. Sudut serangan 23 derajat ke kanan — pelaku kemungkinan kidal atau menyerang dari posisi tidak nyaman. Jejak kimia: tidak natural, kemungkinan rekayasa. Waktu kematian: 2-4 jam sebelum ditemukan."
-  return "NEXUS membutuhkan koneksi API aktif untuk analisis penuh. Masukkan GROQ API Key di Settings."
-}
-
-export async function callGroqAI(messages, systemPrompt, temperature = 0.8, maxTokens = 900) {
-  if (!GROQ_CONFIG.API_KEY) {
-    await new Promise((r) => setTimeout(r, 1800))
-    return generateFallback(messages, systemPrompt)
-  }
-  try {
-    const res = await fetch(GROQ_CONFIG.BASE_URL, {
+export const api = {
+  // Health check
+  health: async () => {
+    try {
+      const res = await fetch(`${API_BASE}/health`);
+      return await res.json();
+    } catch (e) {
+      return { status: "NEXUS OFFLINE", aiReady: false, error: e.message };
+    }
+  },
+  
+  // Load semua kasus
+  getCases: async () => {
+    const cases = [];
+    for (let i = 1; i <= 50; i++) {
+      try {
+        const res = await fetch(`/cases/case${String(i).padStart(2,'0')}.json`);
+        if (res.ok) cases.push(await res.json());
+      } catch (e) {}
+    }
+    return { cases };
+  },
+  
+  // Load satu kasus
+  getCase: async (id) => {
+    const res = await fetch(`/cases/case${String(id).padStart(2,'0')}.json`);
+    return { case: await res.json() };
+  },
+  
+  // Interogasi - gunakan AI
+  startInterro: async ({ caseId, suspectId, playerId }) => {
+    const res = await fetch(`${API_BASE}/interrogation/start`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${GROQ_CONFIG.API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: GROQ_CONFIG.MODEL,
-        messages: [{ role: "system", content: systemPrompt }, ...messages],
-        temperature,
-        max_tokens: maxTokens,
-      }),
-    })
-    const data = await res.json()
-    return data.choices?.[0]?.message?.content || "Neural link terputus."
-  } catch {
-    return generateFallback(messages, systemPrompt)
-  }
-}
-
-export function setApiKey(key) {
-  GROQ_CONFIG.API_KEY = key
-}
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ caseId, suspectId, playerId })
+    });
+    return await res.json();
+  },
+  
+  sendMsg: async ({ sessionId, message }) => {
+    const res = await fetch(`${API_BASE}/interrogation/message`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionId, message })
+    });
+    return await res.json();
+  },
+  
+  // Mind Reader - analisis teori dengan AI
+  mindReader: async ({ theory, caseId }) => {
+    const res = await fetch(`${API_BASE}/mindreader`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ theory, caseId })
+    });
+    return await res.json();
+  },
+  
+  // Cognitive Report
+  getCogReport: async (playerId) => {
+    const res = await fetch(`${API_BASE}/cognitive/${playerId}/report`);
+    return await res.json();
+  },
+  
+  // Academy
+  getModules: async () => {
+    const res = await fetch(`${API_BASE}/academy/modules`);
+    return await res.json();
+  },
+  
+  getLesson: async ({ moduleId, lessonNumber, playerId }) => {
+    const res = await fetch(`${API_BASE}/academy/lesson`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ moduleId, lessonNumber, playerId })
+    });
+    return await res.json();
+  },
+  
+  evalAnswer: async ({ moduleId, question, answer }) => {
+    const res = await fetch(`${API_BASE}/academy/evaluate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ moduleId, question, answer })
+    });
+    return await res.json();
+  },
+  
+  // Solve case
+  solveCase: async (caseId, { suspectId, theory, playerId }) => {
+    const res = await fetch(`${API_BASE}/cases/${caseId}/solve`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ suspectId, theory, playerId })
+    });
+    return await res.json();
+  },
+  
+  // Network
+  registerNet: async ({ playerId, name }) => {
+    const res = await fetch(`${API_BASE}/network/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ playerId, name })
+    });
+    return await res.json();
+  },
+  
+  getLeaderboard: async (type = 'points', limit = 50) => {
+    const res = await fetch(`${API_BASE}/network/leaderboard?type=${type}&limit=${limit}`);
+    return await res.json();
+  },
+  
+  getDailyCase: async () => {
+    const res = await fetch(`${API_BASE}/network/daily`);
+    return await res.json();
+  },
+  
+  omegaNext: async ({ playerId }) => {
+    const res = await fetch(`${API_BASE}/omega/next`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ playerId })
+    });
+    return await res.json();
+  },
+};
