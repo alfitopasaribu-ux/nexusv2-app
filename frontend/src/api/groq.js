@@ -3,33 +3,57 @@
 
 import Groq from 'groq-sdk'
 
-// Get API key dari environment variable
+// Get API key - cek environment variable dulu
 const getApiKey = () => {
-  // Dari environment variable (Vercel) atau .env.local
+  // Dari environment variable (Vite/Vercel)
   const envKey = import.meta.env.VITE_GROQ_API_KEY
-  if (envKey && envKey.startsWith('gsk_') && envKey.length > 20) {
+  
+  // Validasi: harus mulai dengan "gsk_" dan panjang > 20
+  if (envKey && typeof envKey === 'string' && envKey.startsWith('gsk_') && envKey.length > 20) {
+    console.log('[Groq] API Key found:', envKey.substring(0, 10) + '...')
     return envKey
   }
-  // Return null kalau belum diset - user harus set di Vercel
+  
+  console.warn('[Groq] No valid API key found. Set VITE_GROQ_API_KEY in Vercel.')
   return null
 }
 
-// Initialize Groq client
-let groq = null
+// Initialize Groq client - singleton
+let groqClient = null
 
 function initGroq() {
+  if (groqClient) return groqClient
+  
   const apiKey = getApiKey()
-  if (apiKey) {
-    groq = new Groq({ apiKey })
+  if (!apiKey) {
+    console.error('[Groq] Failed to initialize - no API key')
+    return null
   }
-  return groq
+  
+  try {
+    groqClient = new Groq({
+      apiKey: apiKey,
+      dangerouslyAllowBrowser: true // Diperlukan untuk client-side
+    })
+    console.log('[Groq] Client initialized successfully')
+  } catch (error) {
+    console.error('[Groq] Initialization error:', error)
+    return null
+  }
+  
+  return groqClient
 }
 
-export async function callGroq(prompt, systemPrompt = 'You are NEXUS AI detective.') {
+// Main function to call Groq AI
+export async function callGroq(prompt, systemPrompt = 'You are NEXUS AI detective. Respond in Indonesian.') {
+  console.log('[Groq] Calling AI with prompt:', prompt.substring(0, 50) + '...')
+  
   const client = initGroq()
   
   if (!client) {
-    return 'Error: VITE_GROQ_API_KEY belum diset. Buka file .env dan paste API key Groq kamu.'
+    const errorMsg = 'Error: API key tidak valid atau belum diset. Silakan set VITE_GROQ_API_KEY di Vercel Dashboard → Settings → Environment Variables.'
+    console.error('[Groq]', errorMsg)
+    return errorMsg
   }
   
   try {
@@ -42,12 +66,23 @@ export async function callGroq(prompt, systemPrompt = 'You are NEXUS AI detectiv
       temperature: 0.7,
       max_tokens: 1024
     })
-    return chat.choices[0]?.message?.content || ''
-  } catch (e) {
-    return 'Error: ' + e.message
+    
+    const response = chat.choices[0]?.message?.content
+    console.log('[Groq] Response received:', response?.substring(0, 50) + '...')
+    
+    if (!response) {
+      return 'Error: Tidak ada response dari AI. Coba lagi.'
+    }
+    
+    return response
+    
+  } catch (error) {
+    console.error('[Groq] API Error:', error.message)
+    return 'Error: ' + error.message
   }
 }
 
+// Check if AI is ready
 export function isAiReady() {
   return getApiKey() !== null
 }
