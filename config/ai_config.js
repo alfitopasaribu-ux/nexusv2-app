@@ -6,7 +6,7 @@
 require('dotenv').config();
 
 // Base64 encoded API Key - decode saat runtime
-const ENCODED_API_KEY = 'Z3NrX0VVZ0p2TXpkRmoyUFE5NU1ObGtDV0dkeWIzRll1T3FuTnBRQmhrN3N5U1R2aHpxTG5ySjM=';
+const ENCODED_API_KEY = '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';
 
 // Decode Base64 function
 function decodeApiKey(encoded) {
